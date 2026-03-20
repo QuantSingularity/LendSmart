@@ -6,60 +6,60 @@ This directory contains the infrastructure as code (IaC) configurations and depl
 
 ```
 infrastructure/
-├── README.md                    # This file
-├── DEPLOYMENT.md                # Detailed deployment guide
-├── ansible/                     # Ansible playbooks and roles
-│   ├── ansible.cfg             # Ansible configuration
-│   ├── inventory/              # Server inventories
-│   │   ├── hosts.yml           # Active inventory (not in Git)
-│   │   └── hosts.example.yml   # Example inventory template
-│   ├── playbooks/              # Ansible playbooks
-│   ├── roles/                  # Ansible roles
-│   └── group_vars/             # Group variables
-│       └── all.example.yml     # Example variables
-├── kubernetes/                  # Kubernetes manifests
-│   ├── base/                   # Base manifests
-│   │   ├── *-deployment.yaml  # Application deployments
-│   │   ├── *-service.yaml     # Kubernetes services
-│   │   ├── *-statefulset.yaml # Stateful applications
+├── README.md                         # This file
+├── DEPLOYMENT.md                     # Detailed deployment guide
+├── ansible/                          # Ansible playbooks and roles
+│   ├── ansible.cfg                   # Ansible configuration
+│   ├── inventory/                    # Server inventories
+│   │   ├── hosts.yml                 # Active inventory (not in Git)
+│   │   └── hosts.example.yml         # Example inventory template
+│   ├── playbooks/                    # Ansible playbooks
+│   ├── roles/                        # Ansible roles
+│   └── group_vars/                   # Group variables
+│       └── all.example.yml           # Example variables
+├── kubernetes/                       # Kubernetes manifests
+│   ├── base/                         # Base manifests
+│   │   ├── *-deployment.yaml         # Application deployments
+│   │   ├── *-service.yaml            # Kubernetes services
+│   │   ├── *-statefulset.yaml        # Stateful applications
 │   │   ├── app-secrets.example.yaml  # Secret template
-│   │   ├── ingress.yaml       # Ingress configuration
+│   │   ├── ingress.yaml              # Ingress configuration
 │   │   └── poddisruptionbudget.yaml  # PDB for HA
-│   ├── rbac/                   # RBAC configurations
+│   ├── rbac/                         # RBAC configurations
 │   │   ├── serviceaccount.yaml
 │   │   ├── role.yaml
 │   │   └── rolebinding.yaml
-│   └── environments/           # Environment-specific values
+│   └── environments/                 # Environment-specific values
 │       ├── dev/
 │       ├── staging/
 │       └── prod/
-├── terraform/                   # Terraform configurations
-│   ├── main.tf                 # Main configuration
-│   ├── variables.tf            # Variable definitions
-│   ├── outputs.tf              # Output definitions
-│   ├── backend.tf              # Backend configuration
-│   ├── terraform.tfvars.example  # Example variables
-│   ├── .terraform-version      # Terraform version pinning
-│   ├── .tflint.hcl             # TFLint configuration
-│   ├── modules/                # Terraform modules
-│   │   ├── compute/           # EC2, ASG, ALB
-│   │   ├── database/          # RDS, Aurora
-│   │   ├── network/           # VPC, subnets, routing
-│   │   ├── security/          # Security groups, IAM
-│   │   ├── storage/           # S3 buckets
-│   │   └── cost_optimization/ # Scaling policies
-│   └── environments/           # Environment-specific tfvars
+├── terraform/                        # Terraform configurations
+│   ├── main.tf                       # Main configuration
+│   ├── variables.tf                  # Variable definitions
+│   ├── outputs.tf                    # Output definitions
+│   ├── backend.tf                    # Backend configuration
+│   ├── terraform.tfvars.example      # Example variables
+│   ├── .terraform-version            # Terraform version pinning
+│   ├── .tflint.hcl                   # TFLint configuration
+│   ├── modules/                      # Terraform modules
+│   │   ├── compute/                  # EC2, ASG, ALB
+│   │   ├── database/                 # RDS, Aurora
+│   │   ├── network/                  # VPC, subnets, routing
+│   │   ├── security/                 # Security groups, IAM
+│   │   ├── storage/                  # S3 buckets
+│   │   └── cost_optimization/        # Scaling policies
+│   └── environments/                 # Environment-specific tfvars
 │       ├── dev/
 │       ├── staging/
 │       └── prod/
-├── ci-cd/                       # CI/CD pipelines
-│   └── ci-cd.yml               # GitHub Actions workflow
-├── docs/                        # Documentation
+├── ci-cd/                            # CI/CD pipelines
+│   └── ci-cd.yml                     # GitHub Actions workflow
+├── docs/                             # Documentation
 │   └── design_document.md
-├── runbooks/                    # Operational runbooks
+├── runbooks/                         # Operational runbooks
 │   ├── deployment_runbook.md
 │   └── incident_response.md
-└── validation_logs/             # Validation outputs
+└── validation_logs/                  # Validation outputs
     ├── terraform_validate.txt
     ├── kubernetes_yamllint.txt
     └── ansible_lint.txt
@@ -69,7 +69,7 @@ infrastructure/
 
 ### Prerequisites
 
-Install required tools (see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions):
+Install required tools:
 
 - Terraform >= 1.6.6
 - kubectl >= 1.28.0
@@ -102,8 +102,6 @@ cp inventory/hosts.example.yml inventory/hosts.yml
 # Edit hosts.yml with your server IPs
 ansible-playbook -i inventory/hosts.yml playbooks/main.yml
 ```
-
-See **[DEPLOYMENT.md](DEPLOYMENT.md)** for complete step-by-step instructions.
 
 ## Components
 
@@ -373,30 +371,3 @@ chmod 600 ~/.ssh/your-key.pem
 # Test manual connection
 ssh -i ~/.ssh/your-key.pem user@host
 ```
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for more troubleshooting tips.
-
-## Documentation
-
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Complete deployment guide
-- [docs/design_document.md](docs/design_document.md) - Architecture details
-- [runbooks/deployment_runbook.md](runbooks/deployment_runbook.md) - Operations guide
-- [runbooks/incident_response.md](runbooks/incident_response.md) - Incident procedures
-
-## Support
-
-For issues or questions:
-
-- Review documentation in this directory
-- Check validation logs in `validation_logs/`
-- Open an issue on GitHub
-- Contact the DevOps team
-
-## Change Log
-
-- **2024-12**: Infrastructure code audit and fixes
-  - Fixed Terraform module dependencies
-  - Added Kubernetes RBAC and PDB
-  - Created example configuration files
-  - Added comprehensive validation
-  - Updated CI/CD with infrastructure checks
