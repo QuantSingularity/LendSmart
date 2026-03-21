@@ -4,7 +4,7 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)](https://github.com/quantsingularity/LendSmart/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-## 💰 AI-Powered Decentralized Lending Platform
+## AI-Powered Decentralized Lending Platform
 
 LendSmart is an innovative decentralized lending platform that combines blockchain technology with artificial intelligence to create a more accessible, efficient, and secure lending ecosystem for borrowers and lenders worldwide.
 
