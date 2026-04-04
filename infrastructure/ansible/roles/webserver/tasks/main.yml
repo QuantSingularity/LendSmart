@@ -1,15 +1,23 @@
 ---
 # roles/webserver/tasks/main.yml
-- name: Install web server packages
-  yum:
+
+- name: Install web server packages (RedHat)
+  ansible.builtin.yum:
     name:
       - nginx
-      - nodejs
-      - npm
     state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install web server packages (Debian)
+  ansible.builtin.apt:
+    name:
+      - nginx
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
 
 - name: Create web application directory
-  file:
+  ansible.builtin.file:
     path: /var/www/{{ app_name }}
     state: directory
     owner: nginx
@@ -17,13 +25,17 @@
     mode: "0755"
 
 - name: Configure Nginx
-  template:
+  ansible.builtin.template:
     src: nginx.conf.j2
     dest: /etc/nginx/conf.d/{{ app_name }}.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: nginx -t -c %s
   notify: Restart Nginx
 
 - name: Start and enable Nginx
-  systemd:
+  ansible.builtin.systemd:
     name: nginx
     state: started
     enabled: yes

@@ -1,88 +1,154 @@
 ---
-- name: Apply security hardening to servers
+- name: Apply security hardening to all servers
   hosts: all
   become: yes
   tasks:
-    - name: Ensure unattended-upgrades is installed and configured
+    # ── SSH Hardening (all distros via lineinfile) ──────────────────────────
+
+    - name: Disable root SSH login
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin no"
+        state: present
+        validate: sshd -t -f %s
+      notify: Restart sshd
+
+    - name: Disable SSH password authentication
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PasswordAuthentication"
+        line: "PasswordAuthentication no"
+        state: present
+        validate: sshd -t -f %s
+      notify: Restart sshd
+
+    - name: Restrict SSH to authorised users
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?AllowUsers"
+        line: "AllowUsers {{ ansible_user }}"
+        state: present
+        validate: sshd -t -f %s
+      notify: Restart sshd
+
+    - name: Disable SSH X11 forwarding
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?X11Forwarding"
+        line: "X11Forwarding no"
+        state: present
+        validate: sshd -t -f %s
+      notify: Restart sshd
+
+    # ── Debian / Ubuntu specific ────────────────────────────────────────────
+
+    - name: Install unattended-upgrades (Debian)
       ansible.builtin.apt:
         name: unattended-upgrades
         state: present
         update_cache: yes
+      when: ansible_os_family == "Debian"
 
-    - name: Configure unattended-upgrades
+    - name: Configure unattended-upgrades (Debian)
       ansible.builtin.copy:
         content: |
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
         dest: /etc/apt/apt.conf.d/20auto-upgrades
         mode: "0644"
+      when: ansible_os_family == "Debian"
 
-    - name: Ensure SSH is configured securely
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: "^PermitRootLogin"
-        line: "PermitRootLogin no"
-        state: present
-      notify: Restart sshd
-
-    - name: Ensure password authentication is disabled for SSH
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: "^PasswordAuthentication"
-        line: "PasswordAuthentication no"
-        state: present
-      notify: Restart sshd
-
-    - name: Ensure only specified users can SSH
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: "^AllowUsers"
-        line: "AllowUsers {{ ansible_user }}"
-        state: present
-      notify: Restart sshd
-
-    - name: Install UFW (Uncomplicated Firewall)
+    - name: Install UFW (Debian)
       ansible.builtin.apt:
         name: ufw
         state: present
+      when: ansible_os_family == "Debian"
 
-    - name: Deny all incoming traffic by default
+    - name: Set UFW default deny incoming (Debian)
       community.general.ufw:
         state: enabled
         default: deny
         direction: incoming
+      when: ansible_os_family == "Debian"
 
-    - name: Allow SSH (port 22) incoming traffic
+    - name: Allow SSH via UFW (Debian)
       community.general.ufw:
         rule: allow
         port: "22"
         proto: tcp
+      when: ansible_os_family == "Debian"
 
-    - name: Allow HTTP (port 80) incoming traffic
+    - name: Allow HTTP via UFW (Debian)
       community.general.ufw:
         rule: allow
         port: "80"
         proto: tcp
+      when: ansible_os_family == "Debian"
 
-    - name: Allow HTTPS (port 443) incoming traffic
+    - name: Allow HTTPS via UFW (Debian)
       community.general.ufw:
         rule: allow
         port: "443"
         proto: tcp
+      when: ansible_os_family == "Debian"
 
-    - name: Install and configure auditd
+    - name: Install auditd (Debian)
       ansible.builtin.apt:
         name: auditd
         state: present
+      when: ansible_os_family == "Debian"
 
-    - name: Ensure auditd service is running and enabled
+    # ── RedHat / CentOS specific ────────────────────────────────────────────
+
+    - name: Enable automatic updates (RedHat)
+      ansible.builtin.yum:
+        name: dnf-automatic
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Configure dnf-automatic (RedHat)
+      ansible.builtin.lineinfile:
+        path: /etc/dnf/automatic.conf
+        regexp: "^apply_updates"
+        line: "apply_updates = yes"
+      when: ansible_os_family == "RedHat"
+
+    - name: Enable dnf-automatic timer (RedHat)
+      ansible.builtin.systemd:
+        name: dnf-automatic.timer
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Install auditd (RedHat)
+      ansible.builtin.yum:
+        name: audit
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    # ── auditd (all distros) ────────────────────────────────────────────────
+
+    - name: Start and enable auditd
       ansible.builtin.systemd:
         name: auditd
         state: started
         enabled: yes
 
+    - name: Configure kernel sysctl hardening
+      ansible.posix.sysctl:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+        reload: yes
+      loop:
+        - { key: "net.ipv4.conf.all.accept_redirects", value: "0" }
+        - { key: "net.ipv4.conf.all.send_redirects", value: "0" }
+        - { key: "net.ipv4.ip_forward", value: "0" }
+        - { key: "kernel.randomize_va_space", value: "2" }
+
   handlers:
     - name: Restart sshd
       ansible.builtin.service:
-        name: sshd
+        name: "{{ 'ssh' if ansible_os_family == 'Debian' else 'sshd' }}"
         state: restarted

@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1
+FROM mysql:8.0
+
+# Apply custom MySQL configuration
+COPY docker/mysql-custom.cnf /etc/mysql/conf.d/custom.cnf
+
+# Copy database initialisation scripts (optional — place .sql files here)
+# COPY db/init/ /docker-entrypoint-initdb.d/
+
+EXPOSE 3306
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
+  CMD mysqladmin ping -h localhost -u root -p"${MYSQL_ROOT_PASSWORD}" || exit 1

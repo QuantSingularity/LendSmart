@@ -1,15 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ .Values.appName }}-redis"
+  name: lendsmart-redis
+  namespace: default
   labels:
-    app: "{{ .Values.appName }}-redis"
+    app: lendsmart-redis
+    component: cache
 spec:
   type: ClusterIP
   ports:
-    - port: "{{ .Values.redis.servicePort }}"
-      targetPort: "{{ .Values.redis.containerPort }}"
+    - port: 6379
+      targetPort: 6379
       protocol: TCP
       name: redis
   selector:
-    app: "{{ .Values.appName }}-redis"
+    app: lendsmart-redis

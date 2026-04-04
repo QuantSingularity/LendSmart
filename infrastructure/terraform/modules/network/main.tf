@@ -3,13 +3,13 @@ data "aws_availability_zones" "available" {
 }
 
 resource "aws_vpc" "main" {
-  cidr_block = var.vpc_cidr_block
-
+  cidr_block           = var.vpc_cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${var.project_name}-vpc"
+    Name        = "${var.project_name}-${var.environment}-vpc"
+    Environment = var.environment
   }
 }
 
@@ -17,18 +17,22 @@ resource "aws_internet_gateway" "gw" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-igw"
+    Name        = "${var.project_name}-${var.environment}-igw"
+    Environment = var.environment
   }
 }
 
 resource "aws_subnet" "public" {
-  count             = length(var.public_subnet_cidrs)
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = var.public_subnet_cidrs[count.index]
-  availability_zone = data.aws_availability_zones.available.names[count.index]
+  count                   = length(var.public_subnet_cidrs)
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnet_cidrs[count.index]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.project_name}-public-subnet-${count.index}"
+    Name        = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
+    Environment = var.environment
+    Type        = "public"
   }
 }
 
@@ -39,7 +43,9 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "${var.project_name}-private-subnet-${count.index}"
+    Name        = "${var.project_name}-${var.environment}-private-subnet-${count.index + 1}"
+    Environment = var.environment
+    Type        = "private"
   }
 }
 
@@ -52,7 +58,8 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.project_name}-public-rt"
+    Name        = "${var.project_name}-${var.environment}-public-rt"
+    Environment = var.environment
   }
 }
 
@@ -63,12 +70,15 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_eip" "nat" {
-  count = length(var.public_subnet_cidrs)
-  vpc   = true
+  count  = length(var.public_subnet_cidrs)
+  domain = "vpc"
 
   tags = {
-    Name = "${var.project_name}-nat-eip-${count.index}"
+    Name        = "${var.project_name}-${var.environment}-nat-eip-${count.index + 1}"
+    Environment = var.environment
   }
+
+  depends_on = [aws_internet_gateway.gw]
 }
 
 resource "aws_nat_gateway" "nat" {
@@ -77,7 +87,8 @@ resource "aws_nat_gateway" "nat" {
   subnet_id     = aws_subnet.public[count.index].id
 
   tags = {
-    Name = "${var.project_name}-nat-gw-${count.index}"
+    Name        = "${var.project_name}-${var.environment}-nat-gw-${count.index + 1}"
+    Environment = var.environment
   }
 
   depends_on = [aws_internet_gateway.gw]
@@ -93,7 +104,8 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "${var.project_name}-private-rt-${count.index}"
+    Name        = "${var.project_name}-${var.environment}-private-rt-${count.index + 1}"
+    Environment = var.environment
   }
 }
 
@@ -103,9 +115,9 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[count.index].id
 }
 
-
-# CloudFront Distribution (CDN)
 resource "aws_cloudfront_distribution" "s3_distribution" {
+  count = var.s3_bucket_name != "" ? 1 : 0
+
   origin {
     domain_name = var.s3_bucket_regional_domain_name
     origin_id   = "S3-${var.s3_bucket_name}"
@@ -122,7 +134,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3-${var.s3_bucket_name}"
 
     forwarded_values {
@@ -134,8 +146,9 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
     viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
-    default_ttl            = 86400    # 24 hours
-    max_ttl                = 31536000 # 1 year
+    default_ttl            = 86400
+    max_ttl                = 31536000
+    compress               = true
   }
 
   restrictions {
@@ -145,70 +158,14 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    cloudfront_default_certificate = var.acm_certificate_arn == "" ? true : false
+    acm_certificate_arn            = var.acm_certificate_arn != "" ? var.acm_certificate_arn : null
+    ssl_support_method             = var.acm_certificate_arn != "" ? "sni-only" : null
+    minimum_protocol_version       = var.acm_certificate_arn != "" ? "TLSv1.2_2021" : null
   }
 
   tags = {
-    Name = "${var.project_name}-cloudfront"
-  }
-}
-
-# Application Load Balancer (ALB)
-resource "aws_lb" "application_lb" {
-  name               = "${var.project_name}-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = var.alb_security_groups
-  subnets            = aws_subnet.public[*].id
-
-  enable_deletion_protection = true
-
-  tags = {
-    Name = "${var.project_name}-alb"
-  }
-}
-
-resource "aws_lb_target_group" "app_target_group" {
-  name     = "${var.project_name}-tg"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
-
-  health_check {
-    path                = "/health"
-    protocol            = "HTTP"
-    matcher             = "200"
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-  }
-
-  tags = {
-    Name = "${var.project_name}-app-tg"
-  }
-}
-
-resource "aws_lb_listener" "http_listener" {
-  load_balancer_arn = aws_lb.application_lb.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app_target_group.arn
-  }
-}
-
-resource "aws_lb_listener" "https_listener" {
-  load_balancer_arn = aws_lb.application_lb.arn
-  port              = 443
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = var.acm_certificate_arn
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app_target_group.arn
+    Name        = "${var.project_name}-${var.environment}-cloudfront"
+    Environment = var.environment
   }
 }

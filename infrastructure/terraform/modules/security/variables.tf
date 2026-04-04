@@ -20,7 +20,7 @@ variable "vpc_cidr_block" {
 }
 
 variable "s3_bucket_name" {
-  description = "Name of the S3 bucket for read-only access"
+  description = "Name of the S3 bucket for read-only access (leave empty to skip)"
   type        = string
   default     = ""
 }

@@ -1,373 +1,196 @@
-# Infrastructure Directory
+# LendSmart Infrastructure
 
-This directory contains the infrastructure as code (IaC) configurations and deployment automation for the LendSmart platform, enabling consistent, reproducible, and scalable deployments across different environments.
+Production-grade infrastructure for the LendSmart platform, covering:
 
-## Directory Structure
+- **Terraform** — AWS provisioning (VPC, EC2 + ASG, RDS, S3, CloudFront, IAM, CloudWatch)
+- **Kubernetes** — Deployments, Services, Ingress, RBAC, NetworkPolicy, HPA, monitoring, logging
+- **Ansible** — Server provisioning, hardening, database and web-server configuration
+- **Docker** — Multi-stage Dockerfiles for backend, frontend, and database; Compose for local dev
+
+---
+
+## Directory Layout
 
 ```
 infrastructure/
-├── README.md                         # This file
-├── DEPLOYMENT.md                     # Detailed deployment guide
-├── ansible/                          # Ansible playbooks and roles
-│   ├── ansible.cfg                   # Ansible configuration
-│   ├── inventory/                    # Server inventories
-│   │   ├── hosts.yml                 # Active inventory (not in Git)
-│   │   └── hosts.example.yml         # Example inventory template
-│   ├── playbooks/                    # Ansible playbooks
-│   ├── roles/                        # Ansible roles
-│   └── group_vars/                   # Group variables
-│       └── all.example.yml           # Example variables
-├── kubernetes/                       # Kubernetes manifests
-│   ├── base/                         # Base manifests
-│   │   ├── *-deployment.yaml         # Application deployments
-│   │   ├── *-service.yaml            # Kubernetes services
-│   │   ├── *-statefulset.yaml        # Stateful applications
-│   │   ├── app-secrets.example.yaml  # Secret template
-│   │   ├── ingress.yaml              # Ingress configuration
-│   │   └── poddisruptionbudget.yaml  # PDB for HA
-│   ├── rbac/                         # RBAC configurations
-│   │   ├── serviceaccount.yaml
-│   │   ├── role.yaml
-│   │   └── rolebinding.yaml
-│   └── environments/                 # Environment-specific values
-│       ├── dev/
-│       ├── staging/
-│       └── prod/
-├── terraform/                        # Terraform configurations
-│   ├── main.tf                       # Main configuration
-│   ├── variables.tf                  # Variable definitions
-│   ├── outputs.tf                    # Output definitions
-│   ├── backend.tf                    # Backend configuration
-│   ├── terraform.tfvars.example      # Example variables
-│   ├── .terraform-version            # Terraform version pinning
-│   ├── .tflint.hcl                   # TFLint configuration
-│   ├── modules/                      # Terraform modules
-│   │   ├── compute/                  # EC2, ASG, ALB
-│   │   ├── database/                 # RDS, Aurora
-│   │   ├── network/                  # VPC, subnets, routing
-│   │   ├── security/                 # Security groups, IAM
-│   │   ├── storage/                  # S3 buckets
-│   │   └── cost_optimization/        # Scaling policies
-│   └── environments/                 # Environment-specific tfvars
-│       ├── dev/
-│       ├── staging/
-│       └── prod/
-├── ci-cd/                            # CI/CD pipelines
-│   └── ci-cd.yml                     # GitHub Actions workflow
-├── docs/                             # Documentation
-│   └── design_document.md
-├── runbooks/                         # Operational runbooks
-│   ├── deployment_runbook.md
-│   └── incident_response.md
-└── validation_logs/                  # Validation outputs
-    ├── terraform_validate.txt
-    ├── kubernetes_yamllint.txt
-    └── ansible_lint.txt
+├── docker/                         # Dockerfiles & container config
+│   ├── Dockerfile.backend          # Node.js multi-stage (non-root, dumb-init)
+│   ├── Dockerfile.frontend         # React + Nginx multi-stage (non-root)
+│   ├── Dockerfile.database         # MySQL 8 with custom config
+│   ├── nginx-frontend.conf         # Nginx SPA routing + API proxy
+│   ├── mysql-custom.cnf            # MySQL tuning
+│   └── .dockerignore
+├── docker-compose.yml              # Local development (health-check ordering)
+├── docker-compose.prod.yml         # Production override (resource limits, no exposed DB ports)
+├── .env.example                    # Environment variable template
+├── terraform/
+│   ├── main.tf                     # Root module — wires all child modules
+│   ├── variables.tf                # Root variables with validation
+│   ├── outputs.tf                  # Root outputs
+│   ├── backend.tf                  # S3 backend instructions (uncomment to activate)
+│   ├── terraform.tfvars.example    # Copy → terraform.tfvars
+│   ├── .terraform-version          # 1.6.6 (used by tfenv)
+│   ├── .tflint.hcl
+│   ├── environments/
+│   │   ├── dev/terraform.tfvars
+│   │   ├── staging/terraform.tfvars
+│   │   └── prod/terraform.tfvars
+│   └── modules/
+│       ├── compute/                # ASG, Launch Template, ALB (HTTPS), Target Group
+│       ├── database/               # RDS MySQL, optional Aurora cluster
+│       ├── network/                # VPC, subnets, NAT GW, CloudFront (optional)
+│       ├── security/               # ALB SG, App SG, DB SG, IAM role + instance profile
+│       ├── storage/                # S3 bucket (encrypted, versioned, access-logged)
+│       └── cost_optimization/      # Scale-out + scale-in policies, S3 lifecycle rules
+├── kubernetes/
+│   ├── base/                       # Plain Kubernetes manifests (no Helm templating)
+│   │   ├── app-secrets.yaml        # Secret template (populate via external secrets operator)
+│   │   ├── backend-deployment.yaml
+│   │   ├── backend-service.yaml
+│   │   ├── frontend-deployment.yaml
+│   │   ├── frontend-service.yaml
+│   │   ├── database-statefulset.yaml
+│   │   ├── database-service.yaml   # Headless service for StatefulSet
+│   │   ├── redis-deployment.yaml
+│   │   ├── redis-service.yaml
+│   │   ├── redis-pvc.yaml
+│   │   ├── ingress.yaml            # spec.ingressClassName (K8s 1.18+)
+│   │   ├── network-policy.yaml     # Zero-trust: deny-all + explicit allow rules + DNS
+│   │   ├── hpa.yaml                # HorizontalPodAutoscaler v2 (CPU + memory)
+│   │   ├── poddisruptionbudget.yaml
+│   │   ├── configmap.yaml          # Non-secret app configuration
+│   │   ├── monitoring.yaml         # Prometheus + Grafana (PVC-backed)
+│   │   └── logging-agent.yaml      # Fluentd DaemonSet with RBAC
+│   ├── environments/
+│   │   ├── dev/values.yaml
+│   │   ├── staging/values.yaml
+│   │   └── prod/values.yaml
+│   └── rbac/
+│       ├── serviceaccount.yaml
+│       ├── role.yaml
+│       └── rolebinding.yaml
+└── ansible/
+    ├── ansible.cfg
+    ├── inventory/
+    │   ├── hosts.yml               # Static inventory (replace IPs; or use aws_ec2 plugin)
+    │   └── hosts.example.yml
+    ├── group_vars/
+    │   └── all.example.yml
+    └── playbooks/
+        ├── main.yml
+        ├── security_hardening.yml  # OS-family-aware (RedHat + Debian)
+        └── roles/
+            ├── common/             # Package install, timezone, firewall
+            ├── webserver/          # Nginx, TLS, security headers
+            └── database/           # MariaDB, community.mysql.* modules
 ```
+
+---
 
 ## Quick Start
 
-### Prerequisites
-
-Install required tools:
-
-- Terraform >= 1.6.6
-- kubectl >= 1.28.0
-- Ansible >= 2.14
-- yamllint
-- AWS CLI (for AWS deployments)
-
-### Basic Deployment
+### 1 · Local development with Docker Compose
 
 ```bash
-# 1. Deploy cloud infrastructure with Terraform
-cd terraform
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
-terraform init -backend=false
-terraform validate
-terraform plan -out=tfplan
-terraform apply tfplan
-
-# 2. Deploy Kubernetes manifests
-cd ../kubernetes
-cp base/app-secrets.example.yaml base/app-secrets.yaml
-# Edit app-secrets.yaml (base64 encode values)
-kubectl apply -f rbac/
-kubectl apply -f base/
-
-# 3. Configure servers with Ansible
-cd ../ansible
-cp inventory/hosts.example.yml inventory/hosts.yml
-# Edit hosts.yml with your server IPs
-ansible-playbook -i inventory/hosts.yml playbooks/main.yml
+cd infrastructure
+cp .env.example .env
+# Edit .env with your values
+docker compose up --build
 ```
 
-## Components
+Services:
+| Service | URL |
+|----------|------------------------|
+| Frontend | http://localhost:80 |
+| Backend | http://localhost:3000 |
+| MySQL | localhost:3306 |
+| Redis | localhost:6379 |
 
-### Terraform
-
-Infrastructure as Code using Terraform for provisioning and managing cloud resources.
-
-**Key Features:**
-
-- Multi-cloud support (AWS primary, extensible to Azure/GCP)
-- Modular architecture for reusability
-- Environment-specific configurations (dev/staging/prod)
-- Security best practices (encryption, IAM, network segmentation)
-- Cost optimization with auto-scaling and lifecycle policies
-
-**Modules:**
-
-- `network/` - VPC, subnets, IGW, NAT, routing tables
-- `compute/` - EC2 instances, Auto Scaling Groups, Launch Templates, ALB
-- `database/` - RDS MySQL/Aurora with encryption and backups
-- `storage/` - S3 buckets with versioning and lifecycle rules
-- `security/` - Security groups, IAM roles, network ACLs
-- `cost_optimization/` - Scaling policies, CloudWatch alarms
-
-**Quick Commands:**
-
-```bash
-terraform fmt -recursive          # Format all files
-terraform validate                # Validate configuration
-terraform plan                    # Preview changes
-terraform apply                   # Apply changes
-terraform destroy                 # Destroy resources
-```
-
-### Kubernetes
-
-Kubernetes manifests for container orchestration and microservices management.
-
-**Key Features:**
-
-- Microservices deployment configurations
-- Horizontal Pod Autoscaling (HPA)
-- StatefulSets for databases
-- RBAC for security
-- Pod Disruption Budgets for high availability
-- Network policies for pod-to-pod communication control
-- Ingress for external access
-
-**Components:**
-
-- Deployments: backend, frontend
-- StatefulSets: database, redis
-- Services: ClusterIP, LoadBalancer
-- Ingress: NGINX with TLS
-- RBAC: ServiceAccounts, Roles, RoleBindings
-- PodDisruptionBudgets: ensure availability during updates
-
-**Quick Commands:**
-
-```bash
-kubectl apply -f base/            # Apply manifests
-kubectl get pods                  # Check pod status
-kubectl logs -f <pod-name>        # View logs
-kubectl describe pod <pod-name>   # Debug issues
-kubectl delete -f base/           # Remove resources
-```
-
-### Ansible
-
-Ansible playbooks and roles for automating server configuration and application deployment.
-
-**Key Features:**
-
-- Idempotent configuration management
-- Role-based organization
-- Variable-driven configuration
-- Security hardening playbooks
-- Zero-downtime deployment support
-
-**Roles:**
-
-- `common/` - Base system configuration, users, packages
-- `webserver/` - NGINX configuration and SSL setup
-- `database/` - MySQL/PostgreSQL installation and tuning
-
-**Quick Commands:**
-
-```bash
-ansible all -m ping               # Test connectivity
-ansible-playbook playbooks/main.yml --check  # Dry run
-ansible-playbook playbooks/main.yml          # Execute
-ansible-playbook playbooks/security_hardening.yml  # Harden security
-```
-
-### CI/CD
-
-GitHub Actions workflow for continuous integration and deployment.
-
-**Features:**
-
-- Infrastructure validation (Terraform, Kubernetes, Ansible)
-- Code linting (Smart contracts, backend, frontend)
-- Automated testing (unit, integration, e2e)
-- Smart contract deployment to testnets
-- Security scanning
-
-**Workflow Jobs:**
-
-1. `infrastructure-lint` - Validate all infrastructure code
-2. `lint` - Code quality checks
-3. `test` - Run all test suites
-4. `deploy-testnet` - Deploy contracts to Sepolia
-
-## Deployment Environments
-
-### Development
-
-- Single-node deployments
-- Minimal resources for cost savings
-- Local Terraform state
-- Shared development database
-
-### Staging
-
-- Production-like setup
-- Multi-AZ for testing failover
-- Separate database instances
-- Integration testing environment
-
-### Production
-
-- High availability (Multi-AZ)
-- Auto-scaling enabled
-- Encrypted storage and backups
-- Monitoring and alerting
-- S3 backend for Terraform state
-
-## Validation
-
-### Terraform
+### 2 · Terraform (AWS)
 
 ```bash
 cd terraform
-terraform fmt -check -recursive
-terraform init -backend=false
-terraform validate
-# Expected: Success! The configuration is valid.
+
+# First-time setup
+terraform init
+
+# Deploy a specific environment
+terraform plan  -var-file=environments/dev/terraform.tfvars
+terraform apply -var-file=environments/dev/terraform.tfvars
 ```
 
-### Kubernetes
+> **Secrets** — never store `db_password` in tfvars committed to git.  
+> Use `TF_VAR_db_password` env-var or AWS Secrets Manager with a data source.
+
+#### Enable S3 remote state (recommended for teams)
+
+Uncomment the `backend "s3"` block in `backend.tf` and follow the instructions in that file.
+
+### 3 · Kubernetes
 
 ```bash
 cd kubernetes
-yamllint base/*.yaml rbac/*.yaml
-kubectl apply --dry-run=client -f base/
-# Expected: No errors, resources validated
+
+# Create namespace secrets first (use External Secrets Operator in production)
+kubectl apply -f base/app-secrets.yaml
+
+# Apply all base manifests
+kubectl apply -f base/
+
+# Apply environment-specific overrides (if using kustomize or Helm)
+# kubectl apply -k environments/dev/
 ```
 
-### Ansible
+> **Grafana admin password** — populate the `admin-password` key in the
+> `grafana-admin-secret` Secret before deploying `monitoring.yaml`.
+
+### 4 · Ansible
 
 ```bash
 cd ansible
-ansible-lint playbooks/*.yml
-ansible-playbook -i inventory/hosts.yml playbooks/main.yml --syntax-check
-# Expected: No fatal errors
+
+# Install required collections
+ansible-galaxy collection install community.mysql community.general ansible.posix
+
+# Edit inventory/hosts.yml with your server IPs
+
+# Run full provisioning
+ansible-playbook playbooks/main.yml
+
+# Security hardening only
+ansible-playbook playbooks/security_hardening.yml
 ```
 
-See `validation_logs/` directory for sample validation outputs.
+---
 
-## Security Considerations
+## Environment Architecture
 
-### Secrets Management
+| Environment | VPC CIDR    | Instance | DB Class     | ASG  |
+| ----------- | ----------- | -------- | ------------ | ---- |
+| dev         | 10.0.0.0/16 | t3.micro | db.t3.micro  | 1–3  |
+| staging     | 10.1.0.0/16 | t3.small | db.t3.small  | 2–4  |
+| prod        | 10.2.0.0/16 | t3.large | db.r6g.large | 2–10 |
 
-**DO NOT commit secrets to Git!**
+Prod automatically enables: Multi-AZ RDS, deletion protection, final snapshot.
 
-- Use `.example` files as templates
-- Store actual secrets in:
-  - AWS Secrets Manager
-  - HashiCorp Vault
-  - Kubernetes External Secrets
-  - Ansible Vault for sensitive variables
+---
 
-### Required Secret Files (Git-ignored)
+## Security Posture
 
-- `terraform/terraform.tfvars` - Terraform variables
-- `kubernetes/base/app-secrets.yaml` - Kubernetes secrets
-- `ansible/inventory/hosts.yml` - Server inventories
-- `ansible/group_vars/all.yml` - Ansible variables
+- **Network** — Internet traffic hits the ALB only. EC2 instances are in private subnets and accept traffic only from the ALB security group on port 3000. Databases accept only from the app security group on port 3306.
+- **IAM** — EC2 instances get a least-privilege instance profile: SSM (no SSH keys required in prod), CloudWatch agent, and optional S3 read-only.
+- **Encryption** — RDS encrypted at rest (AES-256 / KMS), S3 SSE-AES256, HTTPS enforced at the ALB (TLS 1.2+) and at Nginx.
+- **Kubernetes** — Zero-trust NetworkPolicy (deny-all default, explicit per-workload rules), non-root containers, `readOnlyRootFilesystem`, dropped Linux capabilities, topology spread.
+- **Secrets** — No plaintext secrets in manifests. Use External Secrets Operator / Sealed Secrets / AWS Secrets Manager CSI driver for production.
 
-### Security Features
+---
 
-- **Network Security**: VPC isolation, security groups, network policies
-- **Data Encryption**: RDS encryption at rest, S3 encryption, TLS in transit
-- **IAM**: Least privilege roles, instance profiles
-- **Compliance**: Logging enabled, audit trails, backup retention
-- **Secrets**: Encrypted secret storage, no plain-text secrets
-
-## Monitoring and Logging
-
-### Infrastructure Monitoring
-
-- **CloudWatch**: AWS resource metrics
-- **Prometheus**: Kubernetes cluster metrics
-- **Grafana**: Dashboards and visualization
-
-### Application Logging
-
-- **ELK Stack**: Elasticsearch, Logstash, Kibana
-- **CloudWatch Logs**: Centralized log aggregation
-- **Kubernetes**: Pod logs via `kubectl logs`
-
-### Alerting
-
-- CloudWatch Alarms for CPU, memory, disk
-- PagerDuty/Slack integration
-- Auto-scaling based on metrics
-
-## Disaster Recovery
-
-### Backup Strategy
-
-- **Database**: Automated daily backups, 7-day retention
-- **Application Data**: S3 versioning, lifecycle policies
-- **Infrastructure**: Terraform state backups, Git version control
-
-### Recovery Procedures
-
-See `runbooks/incident_response.md` for detailed procedures:
-
-- Database restoration
-- Infrastructure recreation
-- Application redeployment
-
-## Best Practices
-
-1. **Version Control**: All infrastructure changes via Git
-2. **Testing**: Validate in dev/staging before production
-3. **Documentation**: Update docs for all changes
-4. **Security**: Regular security audits and updates
-5. **Monitoring**: Set up alerts for critical issues
-6. **Backups**: Regular backups and recovery testing
-7. **Immutable Infrastructure**: Replace instead of modify
-8. **CI/CD**: Automate deployments through pipelines
-
-## Troubleshooting
-
-### Common Issues
-
-**Terraform: "Backend initialization required"**
+## Required Ansible Collections
 
 ```bash
-terraform init
-```
-
-**Kubernetes: "ImagePullBackOff"**
-
-```bash
-kubectl describe pod <pod-name>
-# Check image name and registry access
-```
-
-**Ansible: "SSH connection failed"**
-
-```bash
-# Verify SSH key permissions
-chmod 600 ~/.ssh/your-key.pem
-# Test manual connection
-ssh -i ~/.ssh/your-key.pem user@host
+ansible-galaxy collection install \
+  community.mysql \
+  community.general \
+  ansible.posix \
+  amazon.aws
 ```

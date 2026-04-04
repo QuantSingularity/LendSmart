@@ -17,9 +17,14 @@ spec:
         app: lendsmart-frontend
         component: frontend
     spec:
+      serviceAccountName: lendsmart-app
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        fsGroup: 101
       containers:
         - name: frontend
-          image: lendsmart/frontend:latest # Replace with your actual image
+          image: lendsmart/frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -34,14 +39,14 @@ spec:
               memory: 128Mi
           env:
             - name: REACT_APP_API_URL
-              value: http://lendsmart-backend:3000
+              value: http://lendsmart-backend
             - name: REACT_APP_ENV
               value: production
           livenessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 30
+            initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
@@ -53,3 +58,16 @@ spec:
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: lendsmart-frontend

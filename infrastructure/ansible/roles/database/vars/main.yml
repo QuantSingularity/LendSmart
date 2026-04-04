@@ -1,9 +1,6 @@
 ---
 # roles/database/vars/main.yml
-db_name: "{{ db_name }}"
-db_user: "{{ db_user }}"
-db_password: "{{ db_password }}"
-db_root_password: "{{ db_root_password }}"
+# Default values — override these via group_vars/all/vault.yml using ansible-vault
 db_max_connections: 150
 db_max_allowed_packet: "64M"
 db_innodb_buffer_pool_size: "256M"

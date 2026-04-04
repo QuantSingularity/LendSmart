@@ -7,7 +7,7 @@ metadata:
     app: database
     component: database
 spec:
-  serviceName: database
+  serviceName: lendsmart-database
   replicas: 1
   selector:
     matchLabels:
@@ -18,6 +18,8 @@ spec:
         app: database
         component: database
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
         - name: mysql
           image: mysql:8.0
@@ -63,20 +65,27 @@ spec:
                 - ping
                 - -h
                 - localhost
+                - -u
+                - root
+                - -p$(MYSQL_ROOT_PASSWORD)
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             exec:
               command:
-                - mysql
+                - mysqladmin
+                - ping
                 - -h
                 - localhost
-                - -e
-                - SELECT 1
-            initialDelaySeconds: 10
+                - -u
+                - root
+                - -p$(MYSQL_ROOT_PASSWORD)
+            initialDelaySeconds: 15
             periodSeconds: 5
             timeoutSeconds: 3
+            failureThreshold: 3
   volumeClaimTemplates:
     - metadata:
         name: mysql-data

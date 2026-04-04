@@ -1,11 +1,11 @@
-# Application Security Group
-resource "aws_security_group" "app" {
-  name        = "${var.app_name}-${var.environment}-app-sg"
-  description = "Security group for application servers"
+# ALB Security Group — allows public internet traffic
+resource "aws_security_group" "alb" {
+  name        = "${var.app_name}-${var.environment}-alb-sg"
+  description = "Security group for the Application Load Balancer"
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTP from anywhere"
+    description = "HTTP from internet"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -13,11 +13,39 @@ resource "aws_security_group" "app" {
   }
 
   ingress {
-    description = "HTTPS from anywhere"
+    description = "HTTPS from internet"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-alb-sg"
+    Environment = var.environment
+  }
+}
+
+# Application Security Group — only accepts traffic from the ALB
+resource "aws_security_group" "app" {
+  name        = "${var.app_name}-${var.environment}-app-sg"
+  description = "Security group for application servers — ingress from ALB only"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description     = "App traffic from ALB only"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
   }
 
   egress {
@@ -34,10 +62,10 @@ resource "aws_security_group" "app" {
   }
 }
 
-# Database Security Group
+# Database Security Group — only accepts traffic from app servers
 resource "aws_security_group" "db" {
   name        = "${var.app_name}-${var.environment}-db-sg"
-  description = "Security group for database servers"
+  description = "Security group for database servers — ingress from app servers only"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -85,7 +113,19 @@ resource "aws_iam_role" "app_role" {
   }
 }
 
-# S3 Read-Only Policy (optional, only if s3_bucket_name is provided)
+# Attach SSM policy for secure shell access without SSH keys
+resource "aws_iam_role_policy_attachment" "ssm_policy" {
+  role       = aws_iam_role.app_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Attach CloudWatch agent policy for metrics and log shipping
+resource "aws_iam_role_policy_attachment" "cloudwatch_policy" {
+  role       = aws_iam_role.app_role.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+# S3 Read-Only Policy (optional)
 resource "aws_iam_policy" "s3_read_only" {
   count       = var.s3_bucket_name != "" ? 1 : 0
   name        = "${var.app_name}-${var.environment}-s3-read-policy"
@@ -119,9 +159,4 @@ resource "aws_iam_role_policy_attachment" "app_s3_read_only" {
 resource "aws_iam_instance_profile" "app" {
   name = "${var.app_name}-${var.environment}-instance-profile"
   role = aws_iam_role.app_role.name
-
-  tags = {
-    Name        = "${var.app_name}-${var.environment}-instance-profile"
-    Environment = var.environment
-  }
 }

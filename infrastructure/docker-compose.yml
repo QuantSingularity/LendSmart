@@ -1,0 +1,125 @@
+# docker-compose.yml — Local development environment
+# Usage:
+#   cp .env.example .env         # fill in your values
+#   docker compose up --build
+
+version: "3.9"
+
+services:
+  # ── Database ───────────────────────────────────────────────────────────────
+  database:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.database
+    container_name: lendsmart-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-lendsmartdb}
+      MYSQL_USER: ${MYSQL_USER:-appuser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-apppassword}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD:-rootpassword}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - lendsmart-net
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7.2-alpine
+    container_name: lendsmart-redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - lendsmart-net
+
+  # ── Backend ────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+    container_name: lendsmart-backend
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      DATABASE_URL: mysql://${MYSQL_USER:-appuser}:${MYSQL_PASSWORD:-apppassword}@database:3306/${MYSQL_DATABASE:-lendsmartdb}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-prod}
+      API_KEY: ${API_KEY:-dev-api-key}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - lendsmart-net
+
+  # ── Frontend ───────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../infrastructure/docker/Dockerfile.frontend
+      args:
+        REACT_APP_API_URL: http://localhost:3000
+        REACT_APP_ENV: development
+    container_name: lendsmart-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - lendsmart-net
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  lendsmart-net:
+    driver: bridge

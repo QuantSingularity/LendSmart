@@ -16,10 +16,19 @@ spec:
       labels:
         app: lendsmart-backend
         component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
     spec:
+      serviceAccountName: lendsmart-app
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
         - name: backend
-          image: lendsmart/backend:latest # Replace with your actual image
+          image: lendsmart/backend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -35,6 +44,8 @@ spec:
           env:
             - name: NODE_ENV
               value: production
+            - name: PORT
+              value: "3000"
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
@@ -45,6 +56,11 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: JWT_SECRET
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: API_KEY
           livenessProbe:
             httpGet:
               path: /health
@@ -57,7 +73,20 @@ spec:
             httpGet:
               path: /health
               port: http
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: lendsmart-backend

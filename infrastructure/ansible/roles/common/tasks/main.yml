@@ -1,13 +1,21 @@
 ---
 # roles/common/tasks/main.yml
-- name: Update all packages
-  yum:
+
+- name: Update all packages (RedHat)
+  ansible.builtin.yum:
     name: "*"
     state: latest
     update_only: yes
+  when: ansible_os_family == "RedHat"
 
-- name: Install common packages
-  yum:
+- name: Update all packages (Debian)
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install common packages (RedHat)
+  ansible.builtin.yum:
     name:
       - vim
       - git
@@ -17,25 +25,44 @@
       - net-tools
       - python3
       - python3-pip
+      - curl
     state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install common packages (Debian)
+  ansible.builtin.apt:
+    name:
+      - vim
+      - git
+      - wget
+      - unzip
+      - htop
+      - net-tools
+      - python3
+      - python3-pip
+      - curl
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
 
 - name: Set timezone
-  timezone:
+  community.general.timezone:
     name: UTC
 
-- name: Configure firewall
-  firewalld:
+- name: Configure firewall (RedHat)
+  ansible.posix.firewalld:
     service: "{{ item }}"
     permanent: yes
     state: enabled
+    immediate: yes
   loop:
     - http
     - https
     - ssh
   when: ansible_os_family == "RedHat"
 
-- name: Start and enable firewalld
-  systemd:
+- name: Start and enable firewalld (RedHat)
+  ansible.builtin.systemd:
     name: firewalld
     state: started
     enabled: yes

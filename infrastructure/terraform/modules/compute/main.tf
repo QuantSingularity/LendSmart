@@ -19,6 +19,10 @@ resource "aws_launch_template" "app" {
     security_groups             = var.security_group_ids
   }
 
+  iam_instance_profile {
+    name = var.instance_profile_name
+  }
+
   tag_specifications {
     resource_type = "instance"
     tags = {
@@ -29,11 +33,12 @@ resource "aws_launch_template" "app" {
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
-    echo "Hello from ${var.app_name} ${var.environment} instance!"
+    set -e
     yum update -y
-    yum install -y docker
+    amazon-linux-extras install docker -y
     systemctl start docker
     systemctl enable docker
+    usermod -aG docker ec2-user
   EOF
   )
 }
@@ -41,9 +46,11 @@ resource "aws_launch_template" "app" {
 resource "aws_autoscaling_group" "app" {
   name                = "${var.app_name}-${var.environment}-asg"
   vpc_zone_identifier = var.private_subnet_ids
-  min_size            = 2
-  max_size            = 5
-  desired_capacity    = 2
+  min_size            = var.asg_min_size
+  max_size            = var.asg_max_size
+  desired_capacity    = var.asg_desired_capacity
+  health_check_type          = "ELB"
+  health_check_grace_period  = 300
 
   launch_template {
     id      = aws_launch_template.app.id
@@ -63,12 +70,19 @@ resource "aws_autoscaling_group" "app" {
   }
 }
 
+resource "aws_autoscaling_attachment" "app" {
+  autoscaling_group_name = aws_autoscaling_group.app.id
+  lb_target_group_arn    = aws_lb_target_group.app.arn
+}
+
 resource "aws_lb" "app" {
   name               = "${var.app_name}-${var.environment}-lb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = var.security_group_ids
-  subnets            = var.private_subnet_ids
+  subnets            = var.public_subnet_ids
+
+  enable_deletion_protection = var.environment == "prod" ? true : false
 
   tags = {
     Name        = "${var.app_name}-${var.environment}-lb"
@@ -78,24 +92,47 @@ resource "aws_lb" "app" {
 
 resource "aws_lb_target_group" "app" {
   name     = "${var.app_name}-${var.environment}-tg"
-  port     = 80
+  port     = 3000
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
   health_check {
-    path                = "/"
+    path                = "/health"
     port                = "traffic-port"
-    healthy_threshold   = 3
+    healthy_threshold   = 2
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 30
+    matcher             = "200"
+  }
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-tg"
+    Environment = var.environment
   }
 }
 
-resource "aws_lb_listener" "app" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.app.arn
   port              = 80
   protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = var.acm_certificate_arn
 
   default_action {
     type             = "forward"

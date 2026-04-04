@@ -1,7 +1,7 @@
 ---
 # roles/database/tasks/main.yml
 - name: Install database packages
-  yum:
+  ansible.builtin.yum:
     name:
       - mariadb-server
       - mariadb
@@ -9,34 +9,57 @@
     state: present
 
 - name: Configure MariaDB
-  template:
+  ansible.builtin.template:
     src: my.cnf.j2
     dest: /etc/my.cnf.d/server.cnf
+    owner: root
+    group: root
+    mode: "0644"
   notify: Restart MariaDB
 
 - name: Start and enable MariaDB
-  systemd:
+  ansible.builtin.systemd:
     name: mariadb
     state: started
     enabled: yes
 
 - name: Set root password
-  mysql_user:
+  community.mysql.mysql_user:
     name: root
     password: "{{ db_root_password }}"
     host_all: yes
     state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  no_log: true
+
+- name: Remove anonymous users
+  community.mysql.mysql_user:
+    name: ""
+    host_all: yes
+    state: absent
+    login_user: root
+    login_password: "{{ db_root_password }}"
+  no_log: true
+
+- name: Remove test database
+  community.mysql.mysql_db:
+    name: test
+    state: absent
+    login_user: root
+    login_password: "{{ db_root_password }}"
   no_log: true
 
 - name: Create application database
-  mysql_db:
+  community.mysql.mysql_db:
     name: "{{ db_name }}"
     state: present
+    encoding: utf8mb4
+    collation: utf8mb4_unicode_ci
     login_user: root
     login_password: "{{ db_root_password }}"
 
 - name: Create application database user
-  mysql_user:
+  community.mysql.mysql_user:
     name: "{{ db_user }}"
     password: "{{ db_password }}"
     priv: "{{ db_name }}.*:ALL"

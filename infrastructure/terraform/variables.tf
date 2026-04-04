@@ -7,11 +7,23 @@ variable "aws_region" {
 variable "environment" {
   description = "Environment name (dev, staging, prod)"
   type        = string
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be one of: dev, staging, prod."
+  }
 }
 
 variable "app_name" {
   description = "Application name"
   type        = string
+  default     = "lendsmart"
+}
+
+variable "project_name" {
+  description = "Project name used for resource naming"
+  type        = string
+  default     = "lendsmart"
 }
 
 variable "vpc_cidr" {
@@ -50,6 +62,30 @@ variable "key_name" {
   default     = null
 }
 
+variable "asg_min_size" {
+  description = "Minimum number of instances in the ASG"
+  type        = number
+  default     = 2
+}
+
+variable "asg_max_size" {
+  description = "Maximum number of instances in the ASG"
+  type        = number
+  default     = 5
+}
+
+variable "asg_desired_capacity" {
+  description = "Desired number of instances in the ASG"
+  type        = number
+  default     = 2
+}
+
+variable "acm_certificate_arn" {
+  description = "ARN of the ACM certificate for HTTPS"
+  type        = string
+  default     = ""
+}
+
 variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
@@ -59,6 +95,7 @@ variable "db_instance_class" {
 variable "db_name" {
   description = "Database name"
   type        = string
+  default     = "lendsmartdb"
 }
 
 variable "db_username" {
@@ -73,17 +110,12 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "project_name" {
-  description = "Project name used for resource naming"
-  type        = string
-  default     = "lendsmart"
-}
-
 variable "default_tags" {
-  description = "Default tags for all resources"
+  description = "Default tags applied to all resources"
   type        = map(string)
   default = {
     Terraform   = "true"
-    Environment = "dev"
+    Project     = "LendSmart"
+    ManagedBy   = "Terraform"
   }
 }

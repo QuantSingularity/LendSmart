@@ -31,7 +31,7 @@ variable "private_subnet_cidrs" {
 }
 
 variable "s3_bucket_name" {
-  description = "The name of the S3 bucket for CloudFront origin"
+  description = "The name of the S3 bucket for CloudFront origin (leave empty to skip CloudFront)"
   type        = string
   default     = ""
 }
@@ -43,7 +43,7 @@ variable "s3_bucket_regional_domain_name" {
 }
 
 variable "s3_origin_access_identity" {
-  description = "The ARN of the S3 Origin Access Identity for CloudFront"
+  description = "The CloudFront Origin Access Identity path for S3"
   type        = string
   default     = ""
 }
@@ -55,7 +55,7 @@ variable "alb_security_groups" {
 }
 
 variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate for HTTPS listener on ALB"
+  description = "The ARN of the ACM certificate for HTTPS"
   type        = string
   default     = ""
 }

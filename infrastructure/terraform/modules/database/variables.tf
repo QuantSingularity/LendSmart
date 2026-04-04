@@ -3,6 +3,12 @@ variable "environment" {
   type        = string
 }
 
+variable "project_name" {
+  description = "Project name used for resource naming"
+  type        = string
+  default     = "lendsmart"
+}
+
 variable "vpc_id" {
   description = "ID of the VPC"
   type        = string
@@ -18,7 +24,6 @@ variable "security_group_ids" {
   type        = list(string)
 }
 
-# RDS Instance Configuration
 variable "db_instance_class" {
   description = "The instance type of the RDS database"
   type        = string
@@ -58,7 +63,7 @@ variable "db_engine" {
 variable "db_engine_version" {
   description = "The database engine version"
   type        = string
-  default     = "8.0.28"
+  default     = "8.0.35"
 }
 
 variable "db_parameter_group_name" {
@@ -70,19 +75,7 @@ variable "db_parameter_group_name" {
 variable "db_skip_final_snapshot" {
   description = "Determines whether a final DB snapshot is created before deletion"
   type        = bool
-  default     = true
-}
-
-variable "db_subnet_group_name" {
-  description = "The name of the DB subnet group to associate"
-  type        = string
-  default     = ""
-}
-
-variable "db_security_group_ids" {
-  description = "A list of VPC security group IDs to associate with the DB instance"
-  type        = list(string)
-  default     = []
+  default     = false
 }
 
 variable "db_kms_key_id" {
@@ -103,10 +96,22 @@ variable "db_backup_window" {
   default     = "03:00-04:00"
 }
 
+variable "db_maintenance_window" {
+  description = "The weekly time range for system maintenance"
+  type        = string
+  default     = "sun:05:00-sun:06:00"
+}
+
 variable "db_multi_az" {
   description = "A boolean indicating whether the DB instance is Multi-AZ"
   type        = bool
   default     = false
+}
+
+variable "db_deletion_protection" {
+  description = "Whether deletion protection is enabled for the DB instance"
+  type        = bool
+  default     = true
 }
 
 variable "db_performance_insights_enabled" {
@@ -116,7 +121,7 @@ variable "db_performance_insights_enabled" {
 }
 
 variable "db_performance_insights_retention_period" {
-  description = "Amount of time in days to retain Performance Insights data"
+  description = "Amount of time in days to retain Performance Insights data (7 or 731)"
   type        = number
   default     = 7
 }
@@ -127,9 +132,14 @@ variable "db_performance_insights_kms_key_id" {
   default     = null
 }
 
-# Aurora Configuration
+variable "enable_aurora" {
+  description = "Whether to create an Aurora cluster in addition to the RDS instance"
+  type        = bool
+  default     = false
+}
+
 variable "aurora_availability_zones" {
-  description = "List of EC2 AZs for DB cluster instances"
+  description = "List of EC2 AZs for Aurora cluster instances"
   type        = list(string)
   default     = []
 }

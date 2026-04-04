@@ -1,34 +1,39 @@
-# Example Terraform Variables File
-# Copy this file to terraform.tfvars and fill in your actual values
-# DO NOT commit terraform.tfvars to version control
+# Example Terraform Variables
+# Copy to terraform.tfvars and fill in your values.
+# DO NOT commit terraform.tfvars to version control — it is in .gitignore.
 
-# AWS Configuration
+# ── AWS ────────────────────────────────────────────────────────────────────
 aws_region = "us-west-2"
 
-# Environment Configuration
-environment = "dev"  # Options: dev, staging, prod
-app_name    = "lendsmart"
+# ── Environment ────────────────────────────────────────────────────────────
+environment  = "dev"   # dev | staging | prod
+app_name     = "lendsmart"
 project_name = "lendsmart"
 
-# Network Configuration
+# ── Network ────────────────────────────────────────────────────────────────
 vpc_cidr             = "10.0.0.0/16"
 availability_zones   = ["us-west-2a", "us-west-2b", "us-west-2c"]
 public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 private_subnet_cidrs = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
 
-# Compute Configuration
-instance_type = "t3.micro"
-key_name      = null  # Set to your SSH key name or leave as null
+# ── Compute ────────────────────────────────────────────────────────────────
+instance_type        = "t3.micro"
+key_name             = null   # Set to your EC2 key pair name; null = use SSM only
+asg_min_size         = 1
+asg_max_size         = 3
+asg_desired_capacity = 1
+acm_certificate_arn  = ""     # Required for HTTPS listener — set after cert is issued
 
-# Database Configuration
+# ── Database ───────────────────────────────────────────────────────────────
 db_instance_class = "db.t3.micro"
-db_name           = "lendsmart_dev"
+db_name           = "lendsmartdb_dev"
 db_username       = "admin"
-db_password       = "CHANGE_ME_USE_STRONG_PASSWORD"  # Use AWS Secrets Manager in production!
+db_password       = "CHANGE_ME_USE_STRONG_PASSWORD"   # Use AWS Secrets Manager in production
 
-# Tags
+# ── Tags ───────────────────────────────────────────────────────────────────
 default_tags = {
   Terraform   = "true"
   Environment = "dev"
   Project     = "LendSmart"
+  ManagedBy   = "Terraform"
 }

@@ -13,17 +13,20 @@ rules:
     resources:
       - nodes
       - nodes/proxy
+      - nodes/metrics
       - services
       - endpoints
       - pods
     verbs: ["get", "list", "watch"]
-  - apiGroups: ["extensions"]
+  - apiGroups: ["networking.k8s.io"]
     resources:
       - ingresses
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources:
       - configmaps
+    verbs: ["get"]
+  - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
     verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -39,10 +42,44 @@ subjects:
     name: prometheus
     namespace: default
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-admin-secret
+  namespace: default
+type: Opaque
+data:
+  admin-user: YWRtaW4=
+  admin-password: ""
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus-deployment
+  name: prometheus
   namespace: default
   labels:
     app: prometheus
@@ -57,25 +94,51 @@ spec:
         app: prometheus
     spec:
       serviceAccountName: prometheus
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.37.0
+          image: prom/prometheus:v2.51.0
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus"
+            - "--storage.tsdb.retention.time=15d"
+            - "--web.enable-lifecycle"
           ports:
             - containerPort: 9090
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 5
+            periodSeconds: 5
           volumeMounts:
-            - name: prometheus-config-volume
+            - name: prometheus-config
               mountPath: /etc/prometheus/
-            - name: prometheus-storage-volume
+            - name: prometheus-storage
               mountPath: /prometheus
       volumes:
-        - name: prometheus-config-volume
+        - name: prometheus-config
           configMap:
             name: prometheus-config
-        - name: prometheus-storage-volume
-          emptyDir: {}
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -87,11 +150,11 @@ metadata:
 spec:
   selector:
     app: prometheus
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 9090
       targetPort: 9090
-      nodePort: 30000
+      name: http
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -102,6 +165,8 @@ data:
   prometheus.yml: |
     global:
       scrape_interval: 15s
+      evaluation_interval: 15s
+
     scrape_configs:
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
@@ -127,11 +192,26 @@ data:
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
             target_label: kubernetes_pod_name
+
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+      - job_name: 'kubernetes-services'
+        kubernetes_sd_configs:
+          - role: service
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grafana-deployment
+  name: grafana
   namespace: default
   labels:
     app: grafana
@@ -145,22 +225,56 @@ spec:
       labels:
         app: grafana
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        fsGroup: 472
       containers:
         - name: grafana
-          image: grafana/grafana:latest
+          image: grafana/grafana:10.4.2
           ports:
             - containerPort: 3000
+          resources:
+            limits:
+              cpu: 300m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
           env:
             - name: GF_SECURITY_ADMIN_USER
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-admin-secret
+                  key: admin-user
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-admin-secret
+                  key: admin-password
+            - name: GF_PATHS_DATA
+              value: /var/lib/grafana
+            - name: GF_SERVER_ROOT_URL
+              value: "%(protocol)s://%(domain)s/grafana"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
       volumes:
         - name: grafana-storage
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: grafana-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -172,8 +286,8 @@ metadata:
 spec:
   selector:
     app: grafana
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 3000
       targetPort: 3000
-      nodePort: 30001
+      name: http

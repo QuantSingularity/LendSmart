@@ -1,3 +1,4 @@
+# Deny all ingress and egress by default
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -9,6 +10,45 @@ spec:
     - Ingress
     - Egress
 ---
+# Allow all pods to reach kube-dns for DNS resolution
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: default
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# Allow ingress traffic to the frontend from the ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-frontend
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: lendsmart-frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+---
+# Allow frontend to reach backend
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -17,18 +57,19 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: backend
+      app: lendsmart-backend
   policyTypes:
     - Ingress
   ingress:
     - from:
         - podSelector:
             matchLabels:
-              app: frontend
+              app: lendsmart-frontend
       ports:
         - protocol: TCP
-          port: 8080 # Assuming backend listens on 8080
+          port: 3000
 ---
+# Allow backend to reach database
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -44,7 +85,82 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app: backend
+              app: lendsmart-backend
       ports:
         - protocol: TCP
-          port: 3306 # Assuming database listens on 3306
+          port: 3306
+---
+# Allow backend to reach Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-redis
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: lendsmart-redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: lendsmart-backend
+      ports:
+        - protocol: TCP
+          port: 6379
+---
+# Allow backend egress to database and redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-egress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: lendsmart-backend
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: database
+      ports:
+        - protocol: TCP
+          port: 3306
+    - to:
+        - podSelector:
+            matchLabels:
+              app: lendsmart-redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+# Allow Prometheus to scrape all pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: default
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 3000
+        - protocol: TCP
+          port: 80
