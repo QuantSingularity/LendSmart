@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const { getEncryptionService } = require("../config/security/encryption");
-const { logger } = require('../utils/logger');
-
+const { logger } = require("../utils/logger");
 
 /**
  * Loan Model

@@ -7,7 +7,9 @@ const User = require("../models/User");
  */
 exports.getUsers = async (req, res, next) => {
   try {
-    const users = await User.find().select("-password -mfaSecret -mfaBackupCodes -refreshTokens");
+    const users = await User.find().select(
+      "-password -mfaSecret -mfaBackupCodes -refreshTokens",
+    );
 
     res.status(200).json({
       success: true,
@@ -27,7 +29,7 @@ exports.getUsers = async (req, res, next) => {
 exports.getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id).select(
-      "-password -mfaSecret -mfaBackupCodes -refreshTokens"
+      "-password -mfaSecret -mfaBackupCodes -refreshTokens",
     );
 
     if (!user) {
@@ -66,10 +68,20 @@ exports.createUser = async (req, res, next) => {
       dateOfBirth,
     } = req.body;
 
-    if (!username || !firstName || !lastName || !email || !password || !phoneNumber || !employmentStatus || !dateOfBirth) {
+    if (
+      !username ||
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !phoneNumber ||
+      !employmentStatus ||
+      !dateOfBirth
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Please provide username, firstName, lastName, email, password, phoneNumber, employmentStatus, and dateOfBirth",
+        message:
+          "Please provide username, firstName, lastName, email, password, phoneNumber, employmentStatus, and dateOfBirth",
       });
     }
 
@@ -123,9 +135,15 @@ exports.createUser = async (req, res, next) => {
 exports.updateUser = async (req, res, next) => {
   try {
     const allowedFields = [
-      "firstName", "lastName", "email", "role",
-      "phoneNumber", "employmentStatus", "accountStatus",
-      "kycStatus", "creditScore",
+      "firstName",
+      "lastName",
+      "email",
+      "role",
+      "phoneNumber",
+      "employmentStatus",
+      "accountStatus",
+      "kycStatus",
+      "creditScore",
     ];
 
     const fieldsToUpdate = {};
@@ -215,7 +233,9 @@ exports.getUsersByRole = async (req, res, next) => {
       });
     }
 
-    const users = await User.find({ role }).select("-password -mfaSecret -mfaBackupCodes -refreshTokens");
+    const users = await User.find({ role }).select(
+      "-password -mfaSecret -mfaBackupCodes -refreshTokens",
+    );
 
     res.status(200).json({
       success: true,
@@ -236,7 +256,7 @@ exports.getUserByWalletAddress = async (req, res, next) => {
   try {
     const { address } = req.params;
     const user = await User.findOne({ walletAddress: address }).select(
-      "-password -mfaSecret -mfaBackupCodes -refreshTokens"
+      "-password -mfaSecret -mfaBackupCodes -refreshTokens",
     );
 
     if (!user) {

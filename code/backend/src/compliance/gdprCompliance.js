@@ -3,8 +3,32 @@ const { getEncryptionService } = require("../config/security/encryption");
 const { getAuditLogger } = require("./auditLogger");
 const User = require("../models/User");
 const Loan = require("../models/Loan");
-const redisClient = require("../config/redis");
 const { logger } = require("../utils/logger");
+
+// Redis with in-memory fallback
+let redisClient;
+try {
+  redisClient = require("../config/redis");
+} catch (error) {
+  const store = new Map();
+  redisClient = {
+    get: async (k) => store.get(k) || null,
+    setex: async (k, ttl, v) => {
+      store.set(k, v);
+      setTimeout(() => store.delete(k), ttl * 1000);
+      return "OK";
+    },
+    setEx: async (k, ttl, v) => {
+      store.set(k, v);
+      setTimeout(() => store.delete(k), ttl * 1000);
+      return "OK";
+    },
+    del: async (k) => {
+      store.delete(k);
+      return 1;
+    },
+  };
+}
 
 /**
  * GDPR Compliance Module

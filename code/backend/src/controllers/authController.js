@@ -477,14 +477,15 @@ class AuthController {
       if (address !== undefined) fieldsToUpdate.address = address;
       if (metadata !== undefined) fieldsToUpdate.metadata = metadata;
 
-      const user = await User.findByIdAndUpdate(
-        userId,
-        fieldsToUpdate,
-        { new: true, runValidators: true }
-      );
+      const user = await User.findByIdAndUpdate(userId, fieldsToUpdate, {
+        new: true,
+        runValidators: true,
+      });
 
       if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
 
       await this.auditLogger.logDataAccess({
@@ -501,8 +502,13 @@ class AuthController {
         data: { user: authService.sanitizeUser(user) },
       });
     } catch (error) {
-      logger.error("Update details error", { error: error.message, userId: req.user?.id });
-      res.status(500).json({ success: false, message: "Failed to update profile" });
+      logger.error("Update details error", {
+        error: error.message,
+        userId: req.user?.id,
+      });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to update profile" });
     }
   }
 
@@ -525,12 +531,16 @@ class AuthController {
 
       const user = await User.findById(userId).select("+password");
       if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
 
       const isMatch = await user.matchPassword(currentPassword);
       if (!isMatch) {
-        return res.status(400).json({ success: false, message: "Current password is incorrect" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Current password is incorrect" });
       }
 
       user.password = newPassword;
@@ -547,8 +557,13 @@ class AuthController {
 
       res.json({ success: true, message: "Password updated successfully" });
     } catch (error) {
-      logger.error("Update password error", { error: error.message, userId: req.user?.id });
-      res.status(500).json({ success: false, message: "Failed to update password" });
+      logger.error("Update password error", {
+        error: error.message,
+        userId: req.user?.id,
+      });
+      res
+        .status(500)
+        .json({ success: false, message: "Failed to update password" });
     }
   }
 }

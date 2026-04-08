@@ -381,7 +381,10 @@ class AuthService {
 
       // Get user
       const user = await User.findById(decoded.id);
-      if (!user || !user.isActive) {
+      if (
+        !user ||
+        (user.accountStatus !== "active" && user.accountStatus !== "pending")
+      ) {
         throw new Error("User not found or inactive");
       }
 
@@ -796,4 +799,8 @@ class AuthService {
   }
 }
 
-module.exports = new AuthService();
+const authServiceInstance = new AuthService();
+
+module.exports = authServiceInstance;
+module.exports.AuthService = AuthService;
+module.exports.default = authServiceInstance;

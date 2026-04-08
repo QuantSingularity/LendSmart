@@ -295,11 +295,12 @@ exports.updateLoanStatus = asyncHandler(async (req, res) => {
   loan.status = status;
 
   if (reason) {
-    loan.adminNotes = loan.adminNotes || [];
-    loan.adminNotes.push({
+    // internalNotes is the correct schema field
+    loan.internalNotes.push({
       note: reason,
-      addedBy: req.user._id,
-      addedAt: new Date(),
+      createdBy: req.user._id,
+      createdAt: new Date(),
+      isPrivate: true,
     });
   }
 
@@ -344,15 +345,15 @@ exports.getSystemAnalytics = asyncHandler(async (req, res) => {
 
   // Get user statistics
   const totalUsers = await User.countDocuments();
-  const activeUsers = await User.countDocuments({ status: "active" });
-  const newUsers = await User.countDocuments({
-    createdAt: dateFilter,
-  });
+  const activeUsers = await User.countDocuments({ accountStatus: "active" });
+  const newUsersQuery =
+    Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {};
+  const newUsers = await User.countDocuments(newUsersQuery);
 
   // Get loan statistics
   const totalLoans = await Loan.countDocuments();
-  const activeLoans = await Loan.countDocuments({ status: "active" });
-  const completedLoans = await Loan.countDocuments({ status: "completed" });
+  const activeLoans = await Loan.countDocuments({ accountStatus: "active" });
+  const completedLoans = await Loan.countDocuments({ status: "repaid" });
 
   // Calculate total loan amount
   const loanAggregation = await Loan.aggregate([

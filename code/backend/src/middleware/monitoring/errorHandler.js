@@ -1,5 +1,24 @@
 const { logger } = require("../../utils/logger");
-const { auditLogger } = require("../../compliance/auditLogger");
+const { logSystemEvent } = require("../../compliance/auditLogger");
+
+const auditLogger = { logSystemEvent };
+
+class AppError extends Error {
+  constructor(
+    message,
+    statusCode = 500,
+    code = "INTERNAL_SERVER_ERROR",
+    details = null,
+  ) {
+    super(message);
+    this.name = "AppError";
+    this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
 
 /**
  * Enhanced Error Handling Middleware
@@ -437,6 +456,7 @@ const errorHandler = new ErrorHandler();
 
 // Export middleware functions
 module.exports = {
+  AppError,
   errorHandler,
   handleError: errorHandler.handleError.bind(errorHandler),
   handleNotFound: errorHandler.handleNotFound.bind(errorHandler),

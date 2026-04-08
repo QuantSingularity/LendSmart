@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Redis = require("redis");
 const { getAuditLogger } = require("../compliance/auditLogger");
-const { logger } = require('../utils/logger');
+const { logger } = require("../utils/logger");
 
 const auditLogger = getAuditLogger();
 

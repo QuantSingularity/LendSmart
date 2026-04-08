@@ -26,7 +26,8 @@ async function main() {
   console.log("LoanContract deployed to:", loanContractAddress);
 
   // ── Deploy LendSmartLoan ──────────────────────────────────────────────────
-  const initialRiskAssessor = process.env.RISK_ASSESSOR_ADDRESS || deployer.address;
+  const initialRiskAssessor =
+    process.env.RISK_ASSESSOR_ADDRESS || deployer.address;
 
   console.log("\nDeploying LendSmartLoan...");
   const LendSmartLoan = await hre.ethers.getContractFactory("LendSmartLoan");

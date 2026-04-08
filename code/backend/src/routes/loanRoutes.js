@@ -20,11 +20,7 @@ router.get("/", loanController.getMarketplaceLoans.bind(loanController));
 router.get("/:id", loanController.getLoanDetails.bind(loanController));
 
 // Protected routes with :id parameter
-router.post(
-  "/:id/fund",
-  protect,
-  loanController.fundLoan.bind(loanController),
-);
+router.post("/:id/fund", protect, loanController.fundLoan.bind(loanController));
 router.post(
   "/:id/repay",
   protect,

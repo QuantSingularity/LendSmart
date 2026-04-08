@@ -285,7 +285,7 @@ class LoanController {
   async fundLoan(req, res) {
     try {
       const lenderId = req.user.id;
-      const { loanId } = req.params;
+      const loanId = req.params.id || req.params.loanId;
       const { fundingAmount, paymentMethod, walletAddress } = req.body;
 
       // Get loan
@@ -440,7 +440,7 @@ class LoanController {
     } catch (error) {
       logger.error("Loan funding error", {
         error: error.message,
-        loanId: req.params.loanId,
+        loanId: loanId,
         lenderId: req.user?.id,
         ip: req.ip,
       });
@@ -461,7 +461,7 @@ class LoanController {
   async makeRepayment(req, res) {
     try {
       const userId = req.user.id;
-      const { loanId } = req.params;
+      const loanId = req.params.id || req.params.loanId;
       const { amount, paymentMethod, walletAddress } = req.body;
 
       // Get loan
@@ -499,7 +499,7 @@ class LoanController {
       // Process payment
       const paymentResult = await this.processLoanRepayment({
         borrowerId: userId,
-        lenderId: loan.lender._id,
+        lenderId: loan.lender?._id,
         amount,
         paymentMethod,
         walletAddress,
@@ -604,7 +604,7 @@ class LoanController {
     } catch (error) {
       logger.error("Loan repayment error", {
         error: error.message,
-        loanId: req.params.loanId,
+        loanId: loanId,
         userId: req.user?.id,
         ip: req.ip,
       });
@@ -706,8 +706,8 @@ class LoanController {
    */
   async getLoanDetails(req, res) {
     try {
-      const userId = req.user.id;
-      const { loanId } = req.params;
+      const userId = req.user?.id;
+      const loanId = req.params.id || req.params.loanId;
 
       const loan = await Loan.findById(loanId).populate(
         "borrower lender",
@@ -721,17 +721,21 @@ class LoanController {
         });
       }
 
-      // Check if user has access to this loan
-      const hasAccess =
-        loan.borrower._id.toString() === userId ||
-        loan.lender?._id.toString() === userId ||
-        req.user.role === "admin";
+      // Public marketplace loans are visible to all
+      // Private loans require ownership or admin access
+      if (loan.status !== "marketplace") {
+        const hasAccess =
+          userId &&
+          (loan.borrower._id.toString() === userId ||
+            loan.lender?._id.toString() === userId ||
+            req.user?.role === "admin");
 
-      if (!hasAccess) {
-        return res.status(403).json({
-          success: false,
-          message: "Access denied",
-        });
+        if (!hasAccess) {
+          return res.status(403).json({
+            success: false,
+            message: "Access denied",
+          });
+        }
       }
 
       // Get detailed loan information
@@ -753,7 +757,7 @@ class LoanController {
     } catch (error) {
       logger.error("Get loan details error", {
         error: error.message,
-        loanId: req.params.loanId,
+        loanId: loanId,
         userId: req.user?.id,
         ip: req.ip,
       });
@@ -785,9 +789,10 @@ class LoanController {
    * @returns {Object} Sanitized loan data
    */
   async sanitizeLoanData(loan) {
-    const sanitized = (loan && typeof loan.toObject === "function")
-      ? loan.toObject()
-      : { ...loan };
+    const sanitized =
+      loan && typeof loan.toObject === "function"
+        ? loan.toObject()
+        : { ...loan };
 
     // Remove sensitive information
     delete sanitized.internalNotes;

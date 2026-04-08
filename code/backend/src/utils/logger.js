@@ -444,6 +444,74 @@ const Logger = {
         resource,
       });
     },
+
+    blockedIPAccess: (ip, path, method) => {
+      securityLogger.warn("Blocked IP access attempt", {
+        ip,
+        path,
+        method,
+        action: "blocked_ip_access",
+        resource: "security",
+      });
+    },
+
+    ipBlocked: (ip, attempts, reason) => {
+      securityLogger.error("IP address blocked", {
+        ip,
+        attempts,
+        reason,
+        action: "ip_blocked",
+        resource: "security",
+      });
+    },
+
+    ipUnblocked: (ip) => {
+      securityLogger.info("IP address unblocked", {
+        ip,
+        action: "ip_unblocked",
+        resource: "security",
+      });
+    },
+
+    failedAttempt: (ip, count, reason) => {
+      securityLogger.warn("Failed attempt recorded", {
+        ip,
+        count,
+        reason,
+        action: "failed_attempt",
+        resource: "security",
+      });
+    },
+
+    rateLimitExceeded: (ip, path, userAgent) => {
+      securityLogger.warn("Rate limit exceeded", {
+        ip,
+        path,
+        userAgent,
+        action: "rate_limit_exceeded",
+        resource: "security",
+      });
+    },
+
+    authRateLimitExceeded: (ip, identifier, userAgent) => {
+      securityLogger.warn("Auth rate limit exceeded", {
+        ip,
+        identifier,
+        userAgent,
+        action: "auth_rate_limit_exceeded",
+        resource: "authentication",
+      });
+    },
+
+    csrfViolation: (ip, path, userAgent) => {
+      securityLogger.error("CSRF violation detected", {
+        ip,
+        path,
+        userAgent,
+        action: "csrf_violation",
+        resource: "security",
+      });
+    },
   },
 
   // Performance logging

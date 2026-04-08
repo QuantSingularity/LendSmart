@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const { getEncryptionService } = require("../config/security/encryption");
-const { logger } = require('../utils/logger');
-
+const { logger } = require("../utils/logger");
 
 /**
  * User Model
@@ -473,7 +472,10 @@ userSchema.methods.incrementLoginAttempts = function () {
   const updates = { $inc: { loginAttempts: 1 } };
 
   // Lock account after 5 failed attempts for 2 hours
-  if (this.loginAttempts + 1 >= 5 && !this.isAccountLocked) {
+  if (
+    this.loginAttempts + 1 >= 5 &&
+    !(this.lockUntil && this.lockUntil > Date.now())
+  ) {
     updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 }; // 2 hours
   }
 

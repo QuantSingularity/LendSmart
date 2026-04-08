@@ -464,8 +464,51 @@ class TestSetup {
 // Create singleton instance
 const testSetup = new TestSetup();
 
+// testUtils helper for integration tests
+const testUtils = {
+  createTestUser: (overrides = {}) => ({
+    username: overrides.username || `user_${Date.now()}`,
+    email: overrides.email || `user_${Date.now()}@example.com`,
+    password: "TestPassword123!",
+    firstName: "Test",
+    lastName: "User",
+    dateOfBirth: new Date("1990-01-01"),
+    phoneNumber: "+1234567890",
+    employmentStatus: "full-time",
+    income: 60000,
+    role: overrides.role || "user",
+    accountStatus: overrides.accountStatus || "active",
+    emailVerified: true,
+    kycStatus: "verified",
+    creditScore: 720,
+    ...overrides,
+  }),
+  createTestLoanApplication: (overrides = {}) => ({
+    amount: 10000,
+    interestRate: 10.5,
+    term: 12,
+    termUnit: "months",
+    purpose: "personal",
+    ...overrides,
+  }),
+  generateTestToken: (payload = {}) => {
+    const jwt = require("jsonwebtoken");
+    return jwt.sign(
+      {
+        id: payload.userId || payload.id,
+        role: payload.role || "user",
+        ...payload,
+      },
+      process.env.JWT_SECRET ||
+        "test-jwt-secret-key-for-testing-only-min32chars",
+      { expiresIn: "1h" },
+    );
+  },
+};
+
 // Global test utilities
 global.testSetup = testSetup;
-global.expect = require("chai").expect;
+global.testUtils = testUtils;
 
 module.exports = testSetup;
+module.exports.testUtils = testUtils;

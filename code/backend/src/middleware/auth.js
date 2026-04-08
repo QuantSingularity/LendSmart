@@ -31,7 +31,7 @@ exports.protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id).select(
-      "-password -mfaSecret -mfaBackupCodes"
+      "-password -mfaSecret -mfaBackupCodes",
     );
 
     if (!user) {
@@ -64,7 +64,7 @@ exports.protect = async (req, res, next) => {
     if (user.passwordChangedAt) {
       const passwordChangedTimestamp = parseInt(
         user.passwordChangedAt.getTime() / 1000,
-        10
+        10,
       );
       if (decoded.iat < passwordChangedTimestamp) {
         return res.status(401).json({
@@ -86,7 +86,8 @@ exports.protect = async (req, res, next) => {
     return res.status(401).json({
       success: false,
       message,
-      errorCode: err.name === "TokenExpiredError" ? "TOKEN_EXPIRED" : "INVALID_TOKEN",
+      errorCode:
+        err.name === "TokenExpiredError" ? "TOKEN_EXPIRED" : "INVALID_TOKEN",
     });
   }
 };

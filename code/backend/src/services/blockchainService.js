@@ -1,8 +1,6 @@
 /**
  * Blockchain Service Stub
  * Provides blockchain integration functionality
- * Note: This is a simplified implementation for backend startup
- * Full blockchain integration requires additional configuration
  */
 
 const { logger } = require("../utils/logger");
@@ -35,6 +33,21 @@ class BlockchainService {
       blockchainId,
       status,
     });
+    return {
+      transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+    };
+  }
+
+  async createLoanContract(data) {
+    logger.info("Creating loan contract on blockchain (stub)", { data });
+    return {
+      contractAddress: `0x${Math.random().toString(16).substr(2, 40)}`,
+      transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+    };
+  }
+
+  async recordRepayment(data) {
+    logger.info("Recording repayment on blockchain (stub)", { data });
     return {
       transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
     };

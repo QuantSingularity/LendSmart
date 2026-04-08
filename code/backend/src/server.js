@@ -365,6 +365,14 @@ const lendSmartServer = new LendSmartServer();
 
 // Export for testing
 const app = lendSmartServer.app;
+
+// Initialize synchronously for test environment (no DB connection)
+if (process.env.NODE_ENV === "test") {
+  lendSmartServer.configureMiddleware();
+  lendSmartServer.setupRoutes();
+  lendSmartServer.setupErrorHandling();
+}
+
 module.exports = app;
 
 // Start server if not in test environment
