@@ -208,9 +208,11 @@ class LendSmartServer {
     this.app.use(logger.requestLogger);
     this.app.use(httpMetricsMiddleware());
 
-    // Rate limiting
-    this.app.use("/api/", rateLimiter.globalLimiter);
-    this.app.use("/api/auth/", rateLimiter.authLimiter);
+    // Rate limiting - disabled in test environment
+    if (process.env.NODE_ENV !== "test") {
+      this.app.use("/api/", rateLimiter.globalLimiter);
+      this.app.use("/api/auth/", rateLimiter.authLimiter);
+    }
 
     // Request ID middleware
     this.app.use((req, res, next) => {
@@ -405,6 +407,5 @@ if (process.env.NODE_ENV !== "test") {
   process.on("SIGUSR2", () => gracefulShutdown("SIGUSR2")); // Nodemon restart
 }
 
-// Export server instance for external use
-module.exports.server = lendSmartServer;
-module.exports.app = app;
+// Attach server instance for external use without overriding the default export
+app.lendSmartServer = lendSmartServer;

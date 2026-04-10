@@ -705,9 +705,9 @@ class LoanController {
    * @param {Object} res - Express response object
    */
   async getLoanDetails(req, res) {
+    const loanId = req.params.id || req.params.loanId;
     try {
       const userId = req.user?.id;
-      const loanId = req.params.id || req.params.loanId;
 
       const loan = await Loan.findById(loanId).populate(
         "borrower lender",

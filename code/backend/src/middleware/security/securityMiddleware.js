@@ -504,10 +504,10 @@ class SecurityMiddleware {
    */
   _getClientIP(req) {
     return (
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
       req.ip ||
       req.connection?.remoteAddress ||
       req.socket?.remoteAddress ||
-      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
       "unknown"
     );
   }
@@ -804,7 +804,7 @@ class SecurityMiddleware {
    */
   startCleanupTasks() {
     // Clean up old failed attempts and suspicious activities
-    setInterval(() => {
+    this._cleanupInterval = setInterval(() => {
       const now = Date.now();
       const cutoff = now - this.config.blockDuration;
 
@@ -843,6 +843,16 @@ class SecurityMiddleware {
     }, this.config.cleanupInterval);
 
     logger.info("Security cleanup tasks started");
+  }
+
+  /**
+   * Stop cleanup tasks (used in tests)
+   */
+  cleanup() {
+    if (this._cleanupInterval) {
+      clearInterval(this._cleanupInterval);
+      this._cleanupInterval = null;
+    }
   }
 
   /**

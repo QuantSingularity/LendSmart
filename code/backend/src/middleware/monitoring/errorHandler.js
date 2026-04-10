@@ -158,7 +158,7 @@ class ErrorHandler {
     // Handle known operational errors
     if (error.isOperational && error.code) {
       return {
-        status: error.status || 500,
+        status: error.statusCode || error.status || 500,
         code: error.code,
         message: error.message,
         details: error.details,

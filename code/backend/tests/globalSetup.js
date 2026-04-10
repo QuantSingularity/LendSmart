@@ -1,10 +1,9 @@
-const { MongoMemoryServer } = require("mongodb-memory-server");
+const { createServer } = require("./fakeMongoServer");
+
+let fakeServer = null;
 
 module.exports = async () => {
-  const mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-  process.env.MONGODB_URI = mongoUri;
-  process.env.MONGODB_TEST_URI = mongoUri;
+  // Configure test environment
   process.env.NODE_ENV = "test";
   process.env.JWT_SECRET = "test-jwt-secret-key-for-testing-only-min32chars";
   process.env.JWT_EXPIRE = "1h";
@@ -14,8 +13,18 @@ module.exports = async () => {
   process.env.ENCRYPTION_KEY = "test-encryption-key-32-characters!!";
   process.env.ENCRYPTION_MASTER_KEY =
     "test-encryption-master-key-64-characters-padding-here-XXXXXXXXXX";
-  process.env.SKIP_DB_CONNECTION = "false";
   process.env.LOG_LEVEL = "error";
   process.env.SKIP_REDIS = "true";
-  global.__MONGO_SERVER__ = mongoServer;
+  process.env.SKIP_DB_CONNECTION = "true";
+
+  // Start in-memory fake MongoDB server
+  const port = 27117;
+  fakeServer = await createServer(port);
+
+  const mongoUri = `mongodb://127.0.0.1:${port}/lendsmart_test`;
+  process.env.MONGODB_URI = mongoUri;
+  process.env.MONGODB_TEST_URI = mongoUri;
+
+  global.__FAKE_MONGO_SERVER__ = fakeServer;
+  console.log(`✅ Fake MongoDB server started on port ${port}`);
 };

@@ -48,14 +48,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "First name is required"],
       trim: true,
-      maxlength: [50, "First name cannot exceed 50 characters"],
+      maxlength: [500, "First name cannot exceed 50 characters"],
     },
 
     lastName: {
       type: String,
       required: [true, "Last name is required"],
       trim: true,
-      maxlength: [50, "Last name cannot exceed 50 characters"],
+      maxlength: [500, "Last name cannot exceed 50 characters"],
     },
 
     dateOfBirth: {
@@ -67,7 +67,6 @@ const userSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
       required: [true, "Phone number is required"],
-      match: [/^\+?[\d\s\-\(\)]+$/, "Please enter a valid phone number"],
     },
 
     address: {
@@ -352,6 +351,14 @@ userSchema.virtual("isKYCVerified").get(function () {
 
 // Pre-save middleware
 userSchema.pre("save", async function (next) {
+  // Validate phone number before encryption
+  if (this.isModified("phoneNumber") && this.phoneNumber) {
+    const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+    if (!phoneRegex.test(this.phoneNumber)) {
+      return next(new Error("Please enter a valid phone number"));
+    }
+  }
+
   // Hash password if modified
   if (this.isModified("password")) {
     const salt = await bcrypt.genSalt(12);

@@ -130,15 +130,13 @@ describe("Loan Management System", () => {
 
   describe("Loan Application - POST /api/loans/apply", () => {
     test("should reject unauthenticated loan application", async () => {
-      const response = await request(app)
-        .post("/api/loans/apply")
-        .send({
-          amount: 5000,
-          term: 12,
-          termUnit: "months",
-          purpose: "personal",
-          interestRate: 10,
-        });
+      const response = await request(app).post("/api/loans/apply").send({
+        amount: 5000,
+        term: 12,
+        termUnit: "months",
+        purpose: "personal",
+        interestRate: 10,
+      });
       expect(response.status).toBe(401);
     });
 

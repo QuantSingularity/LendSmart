@@ -8,6 +8,10 @@ const {
   AppError,
 } = require("../../src/middleware/monitoring/errorHandler");
 
+afterAll(() => {
+  securityMiddleware.cleanup();
+});
+
 describe("Security Middleware", () => {
   let app;
 

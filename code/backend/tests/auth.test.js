@@ -305,12 +305,10 @@ describe("Authentication System", () => {
 
   describe("Update Password - PUT /api/auth/updatepassword", () => {
     test("should reject password update without auth", async () => {
-      const response = await request(app)
-        .put("/api/auth/updatepassword")
-        .send({
-          currentPassword: "TestPassword123!",
-          newPassword: "NewPass456!",
-        });
+      const response = await request(app).put("/api/auth/updatepassword").send({
+        currentPassword: "TestPassword123!",
+        newPassword: "NewPass456!",
+      });
       expect(response.status).toBe(401);
     });
 

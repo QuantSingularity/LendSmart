@@ -29,6 +29,9 @@ class AuthController {
         firstName,
         lastName,
         phoneNumber,
+        dateOfBirth,
+        employmentStatus,
+        income,
         consents,
       } = req.body;
       const ip = req.ip;
@@ -51,6 +54,9 @@ class AuthController {
         firstName,
         lastName,
         phoneNumber,
+        dateOfBirth,
+        employmentStatus,
+        income,
         ip,
         userAgent,
       };
