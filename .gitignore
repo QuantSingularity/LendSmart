@@ -203,3 +203,10 @@ Desktop.ini
 
 # Ruff cache
 .ruff_cache/
+
+# Testing
+code/backend/coverage/
+
+# Logs
+code/backend/logs/
+*.log
