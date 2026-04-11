@@ -451,3 +451,12 @@ allure-report/
 *.tap
 *.junit.xml
 *.xunit.xml
+
+# Logs directories
+code/backend/logs/
+logs/
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!**/config/**/*.json
