@@ -1,5 +1,5 @@
-import {useContext, useState} from 'react';
-import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+import { useContext, useState } from "react";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
 // Removed unused useTheme import from react-native-paper, as theme comes from ThemeContext
 import {
   Avatar,
@@ -9,23 +9,23 @@ import {
   Switch,
   Text,
   TextInput,
-} from 'react-native-paper';
-import {AuthContext} from '../../../contexts/AuthContext';
-import {ThemeContext} from '../../../contexts/ThemeContext';
-import {spacing} from '../../../theme/theme';
+} from "react-native-paper";
+import { AuthContext } from "../../../contexts/AuthContext";
+import { ThemeContext } from "../../../contexts/ThemeContext";
+import { spacing } from "../../../theme/theme";
 
 // Removed unused Keychain import
 
 // Removed unused navigation prop
 const ProfileScreen = () => {
-  const {user, logout} = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   // theme is correctly obtained from ThemeContext
-  const {isDark, toggleTheme, theme} = useContext(ThemeContext);
+  const { isDark, toggleTheme, theme } = useContext(ThemeContext);
   const styles = createStyles(theme);
 
   // Example state for editable fields
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [isEditing, setIsEditing] = useState(false);
 
   const handleLogout = async () => {
@@ -34,23 +34,23 @@ const ProfileScreen = () => {
       // Navigation to Auth screens happens automatically in AppNavigator
     } catch (err) {
       // Changed variable name from error to err
-      console.error('Logout failed:', err); // Log the error
-      Alert.alert('Logout Failed', 'An error occurred during logout.');
+      console.error("Logout failed:", err); // Log the error
+      Alert.alert("Logout Failed", "An error occurred during logout.");
     }
   };
 
-  const {updateProfile} = useContext(AuthContext);
+  const { updateProfile } = useContext(AuthContext);
 
   const handleSaveChanges = async () => {
-    console.log('Saving changes:', {name, email});
+    console.log("Saving changes:", { name, email });
     try {
       // Call API to update user profile
-      await updateProfile({name, email});
-      Alert.alert('Success', 'Profile updated successfully.');
+      await updateProfile({ name, email });
+      Alert.alert("Success", "Profile updated successfully.");
       setIsEditing(false);
     } catch (err) {
-      console.error('Profile update failed:', err);
-      Alert.alert('Update Failed', err.message || 'Could not update profile.');
+      console.error("Profile update failed:", err);
+      Alert.alert("Update Failed", err.message || "Could not update profile.");
     }
   };
 
@@ -59,12 +59,12 @@ const ProfileScreen = () => {
       <View style={styles.profileHeader}>
         <Avatar.Text
           size={80}
-          label={user?.name?.charAt(0)?.toUpperCase() || 'U'}
+          label={user?.name?.charAt(0)?.toUpperCase() || "U"}
           style={styles.avatar}
         />
-        <Text style={styles.userName}>{user?.name || 'User Name'}</Text>
+        <Text style={styles.userName}>{user?.name || "User Name"}</Text>
         <Text style={styles.userEmail}>
-          {user?.email || 'user@example.com'}
+          {user?.email || "user@example.com"}
         </Text>
       </View>
 
@@ -89,13 +89,15 @@ const ProfileScreen = () => {
             <View style={styles.buttonRow}>
               <Button
                 onPress={() => setIsEditing(false)}
-                style={styles.editButton}>
+                style={styles.editButton}
+              >
                 Cancel
               </Button>
               <Button
                 mode="contained"
                 onPress={handleSaveChanges}
-                style={styles.editButton}>
+                style={styles.editButton}
+              >
                 Save Changes
               </Button>
             </View>
@@ -112,8 +114,8 @@ const ProfileScreen = () => {
           left={() => <List.Icon icon="lock-reset" />}
           onPress={() =>
             Alert.alert(
-              'Not Implemented',
-              'Change password functionality is not yet available.',
+              "Not Implemented",
+              "Change password functionality is not yet available.",
             )
           }
         />
@@ -125,7 +127,7 @@ const ProfileScreen = () => {
         <List.Item
           title="Dark Mode"
           left={() => (
-            <List.Icon icon={isDark ? 'weather-night' : 'weather-sunny'} />
+            <List.Icon icon={isDark ? "weather-night" : "weather-sunny"} />
           )}
           right={() => <Switch value={isDark} onValueChange={toggleTheme} />}
         />
@@ -134,8 +136,8 @@ const ProfileScreen = () => {
           left={() => <List.Icon icon="bell-outline" />}
           onPress={() =>
             Alert.alert(
-              'Not Implemented',
-              'Notification settings are not yet available.',
+              "Not Implemented",
+              "Notification settings are not yet available.",
             )
           }
         />
@@ -158,14 +160,14 @@ const ProfileScreen = () => {
 // Add prop types validation (currently no props)
 ProfileScreen.propTypes = {};
 
-const createStyles = theme =>
+const createStyles = (theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
     profileHeader: {
-      alignItems: 'center',
+      alignItems: "center",
       paddingVertical: spacing.lg,
       backgroundColor: theme.colors.surface, // Or primary color
       borderBottomLeftRadius: theme.borderRadius.xl,
@@ -179,7 +181,7 @@ const createStyles = theme =>
     },
     userName: {
       fontSize: theme.fontSizes.h5,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       color: theme.colors.textPrimary,
       marginBottom: spacing.xs,
     },
@@ -196,8 +198,8 @@ const createStyles = theme =>
       backgroundColor: theme.colors.background, // Adjust background for visibility
     },
     buttonRow: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
+      flexDirection: "row",
+      justifyContent: "flex-end",
       marginTop: spacing.sm,
     },
     editButton: {
@@ -205,7 +207,7 @@ const createStyles = theme =>
     },
     logoutText: {
       color: theme.colors.error,
-      fontWeight: 'bold',
+      fontWeight: "bold",
     },
   });
 

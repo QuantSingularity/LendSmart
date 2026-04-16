@@ -1,14 +1,14 @@
-import {useWalletConnectModal} from '@walletconnect/modal-react-native';
-import {ethers} from 'ethers'; // For provider wrapping
-import PropTypes from 'prop-types';
+import { useWalletConnectModal } from "@walletconnect/modal-react-native";
+import { ethers } from "ethers"; // For provider wrapping
+import PropTypes from "prop-types";
 import React, {
   createContext,
   useCallback,
   useContext,
   useMemo,
   useState,
-} from 'react';
-import {Alert} from 'react-native';
+} from "react";
+import { Alert } from "react-native";
 
 export const WalletContext = createContext({
   isConnected: false,
@@ -19,8 +19,8 @@ export const WalletContext = createContext({
   disconnectWallet: () => {},
 });
 
-export const WalletProvider = ({children}) => {
-  const {open, isConnected, address, provider} = useWalletConnectModal();
+export const WalletProvider = ({ children }) => {
+  const { open, isConnected, address, provider } = useWalletConnectModal();
   const [ethersProvider, setEthersProvider] = useState(null);
 
   // Wrap the WalletConnect provider with ethers.js when connected
@@ -29,7 +29,7 @@ export const WalletProvider = ({children}) => {
       // Wrap the WalletConnect provider with ethers.js BrowserProvider
       const web3Provider = new ethers.BrowserProvider(provider);
       setEthersProvider(web3Provider);
-      console.log('Ethers provider set up for address:', address);
+      console.log("Ethers provider set up for address:", address);
     } else {
       setEthersProvider(null);
     }
@@ -41,10 +41,10 @@ export const WalletProvider = ({children}) => {
         await open(); // Opens the WalletConnect modal
       }
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      console.error("Failed to connect wallet:", error);
       Alert.alert(
-        'Connection Error',
-        'Could not connect wallet. Please try again.',
+        "Connection Error",
+        "Could not connect wallet. Please try again.",
       );
     }
   }, [isConnected, open]);
@@ -56,8 +56,8 @@ export const WalletProvider = ({children}) => {
         setEthersProvider(null); // Clear ethers provider on disconnect
       }
     } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
-      Alert.alert('Disconnection Error', 'Could not disconnect wallet.');
+      console.error("Failed to disconnect wallet:", error);
+      Alert.alert("Disconnection Error", "Could not disconnect wallet.");
     }
   }, [isConnected, provider]);
 

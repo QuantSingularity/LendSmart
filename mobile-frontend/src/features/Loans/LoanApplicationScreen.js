@@ -1,35 +1,35 @@
-import {Formik} from 'formik';
-import PropTypes from 'prop-types'; // Import PropTypes
-import {useContext, useState} from 'react';
-import {Alert, ScrollView, StyleSheet, View} from 'react-native';
+import { Formik } from "formik";
+import PropTypes from "prop-types"; // Import PropTypes
+import { useContext, useState } from "react";
+import { Alert, ScrollView, StyleSheet, View } from "react-native";
 // Removed unused imports: ActivityIndicator, ProgressBar, MD3Colors
-import {Button, Text, TextInput, useTheme} from 'react-native-paper';
-import * as Yup from 'yup';
-import {AuthContext} from '../../../contexts/AuthContext';
-import apiService from '../../../services/apiService'; // Assuming API service is set up
-import {spacing} from '../../../theme/theme';
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import * as Yup from "yup";
+import { AuthContext } from "../../../contexts/AuthContext";
+import apiService from "../../../services/apiService"; // Assuming API service is set up
+import { spacing } from "../../../theme/theme";
 
 const LoanApplicationSchema = Yup.object().shape({
   amount: Yup.number()
-    .required('Loan amount is required')
-    .positive('Amount must be positive')
-    .min(100, 'Minimum loan amount is $100') // Example minimum
-    .max(10000, 'Maximum loan amount is $10,000'), // Example maximum
+    .required("Loan amount is required")
+    .positive("Amount must be positive")
+    .min(100, "Minimum loan amount is $100") // Example minimum
+    .max(10000, "Maximum loan amount is $10,000"), // Example maximum
   term: Yup.number()
-    .required('Loan term is required')
-    .integer('Term must be in whole months')
-    .positive('Term must be positive')
-    .min(1, 'Minimum term is 1 month')
-    .max(36, 'Maximum term is 36 months'), // Example maximum
+    .required("Loan term is required")
+    .integer("Term must be in whole months")
+    .positive("Term must be positive")
+    .min(1, "Minimum term is 1 month")
+    .max(36, "Maximum term is 36 months"), // Example maximum
   purpose: Yup.string()
-    .required('Loan purpose is required')
-    .min(10, 'Please provide a brief description (min 10 chars)')
-    .max(200, 'Purpose description is too long (max 200 chars)'),
+    .required("Loan purpose is required")
+    .min(10, "Please provide a brief description (min 10 chars)")
+    .max(200, "Purpose description is too long (max 200 chars)"),
   // Add more fields as needed (e.g., income details, collateral info)
 });
 
-const LoanApplicationScreen = ({navigation}) => {
-  const {user} = useContext(AuthContext);
+const LoanApplicationScreen = ({ navigation }) => {
+  const { user } = useContext(AuthContext);
   const theme = useTheme();
   const styles = createStyles(theme);
   const [loading, setLoading] = useState(false);
@@ -37,9 +37,9 @@ const LoanApplicationScreen = ({navigation}) => {
   // Removed unused state: step, setStep
   // Removed unused const: totalSteps
 
-  const handleSubmitLoan = async (values, {setSubmitting, resetForm}) => {
+  const handleSubmitLoan = async (values, { setSubmitting, resetForm }) => {
     if (!user) {
-      setError('You must be logged in to apply for a loan.');
+      setError("You must be logged in to apply for a loan.");
       setSubmitting(false);
       return;
     }
@@ -55,18 +55,18 @@ const LoanApplicationScreen = ({navigation}) => {
     setError(null);
     try {
       // 1. Submit application details to backend API
-      console.log('Submitting loan application to backend:', values);
+      console.log("Submitting loan application to backend:", values);
       const apiResponse = await apiService.applyLoan({
         amount: values.amount,
         term: values.term,
         purpose: values.purpose,
         userId: user.id,
       });
-      console.log('API Response:', apiResponse.data);
+      console.log("API Response:", apiResponse.data);
 
       if (!apiResponse.data?.id) {
         throw new Error(
-          apiResponse.data?.message || 'Failed to submit application via API.',
+          apiResponse.data?.message || "Failed to submit application via API.",
         );
       }
 
@@ -74,7 +74,7 @@ const LoanApplicationScreen = ({navigation}) => {
       // This might happen on the backend, or require a signature here.
       // For simplicity, we assume backend handles blockchain interaction or it's not needed at this stage.
       console.log(
-        'Loan application submitted successfully. Loan ID:',
+        "Loan application submitted successfully. Loan ID:",
         apiResponse.data.id,
       );
 
@@ -82,22 +82,22 @@ const LoanApplicationScreen = ({navigation}) => {
 
       // Show success message and reset form
       Alert.alert(
-        'Application Submitted',
-        'Your loan application has been submitted successfully. You can track its status in your dashboard.',
+        "Application Submitted",
+        "Your loan application has been submitted successfully. You can track its status in your dashboard.",
         [
           {
-            text: 'OK',
+            text: "OK",
             onPress: () => {
               resetForm();
-              navigation.navigate('Dashboard');
+              navigation.navigate("Dashboard");
             },
           },
         ],
       );
     } catch (err) {
-      console.error('Loan application failed:', err);
+      console.error("Loan application failed:", err);
       setError(
-        err.message || 'An error occurred while submitting your application.',
+        err.message || "An error occurred while submitting your application.",
       );
     } finally {
       setLoading(false);
@@ -118,9 +118,10 @@ const LoanApplicationScreen = ({navigation}) => {
       {/* <ProgressBar progress={step / totalSteps} color={theme.colors.primary} style={styles.progressBar} /> */}
 
       <Formik
-        initialValues={{amount: '', term: '', purpose: ''}}
+        initialValues={{ amount: "", term: "", purpose: "" }}
         validationSchema={LoanApplicationSchema}
-        onSubmit={handleSubmitLoan}>
+        onSubmit={handleSubmitLoan}
+      >
         {({
           handleChange,
           handleBlur,
@@ -134,8 +135,8 @@ const LoanApplicationScreen = ({navigation}) => {
             <TextInput
               label="Loan Amount ($)"
               value={values.amount}
-              onChangeText={handleChange('amount')}
-              onBlur={handleBlur('amount')}
+              onChangeText={handleChange("amount")}
+              onBlur={handleBlur("amount")}
               keyboardType="numeric"
               style={styles.input}
               error={touched.amount && !!errors.amount}
@@ -147,8 +148,8 @@ const LoanApplicationScreen = ({navigation}) => {
             <TextInput
               label="Loan Term (Months)"
               value={values.term}
-              onChangeText={handleChange('term')}
-              onBlur={handleBlur('term')}
+              onChangeText={handleChange("term")}
+              onBlur={handleBlur("term")}
               keyboardType="numeric"
               style={styles.input}
               error={touched.term && !!errors.term}
@@ -160,8 +161,8 @@ const LoanApplicationScreen = ({navigation}) => {
             <TextInput
               label="Purpose of Loan"
               value={values.purpose}
-              onChangeText={handleChange('purpose')}
-              onBlur={handleBlur('purpose')}
+              onChangeText={handleChange("purpose")}
+              onBlur={handleBlur("purpose")}
               multiline
               numberOfLines={3}
               style={[styles.input, styles.textArea]}
@@ -180,7 +181,8 @@ const LoanApplicationScreen = ({navigation}) => {
               onPress={handleSubmit}
               style={styles.button}
               disabled={isSubmitting || loading}
-              loading={isSubmitting || loading}>
+              loading={isSubmitting || loading}
+            >
               Submit Application
             </Button>
           </View>
@@ -197,7 +199,7 @@ LoanApplicationScreen.propTypes = {
   }).isRequired,
 };
 
-const createStyles = theme =>
+const createStyles = (theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -209,7 +211,7 @@ const createStyles = theme =>
     },
     title: {
       fontSize: theme.fontSizes.h4,
-      fontWeight: 'bold',
+      fontWeight: "bold",
       color: theme.colors.primary,
       marginBottom: spacing.xs,
     },
@@ -230,7 +232,7 @@ const createStyles = theme =>
     },
     textArea: {
       height: 100, // Adjust height for multiline input
-      textAlignVertical: 'top',
+      textAlignVertical: "top",
     },
     button: {
       marginTop: spacing.lg,
@@ -245,7 +247,7 @@ const createStyles = theme =>
     serverErrorText: {
       color: theme.colors.error,
       fontSize: theme.fontSizes.body2,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: spacing.sm,
       marginBottom: spacing.sm,
     },

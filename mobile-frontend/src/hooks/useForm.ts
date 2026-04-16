@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react';
+import { useCallback, useState } from "react";
 
 interface ValidationRules<T> {
   [key: string]: (value: any, values: T) => string | undefined;
@@ -45,11 +45,11 @@ export const useForm = <T extends Record<string, any>>({
       if (validationRules[name as string]) {
         const error = validationRules[name as string](values[name], values);
         if (error) {
-          setErrors(prev => ({...prev, [name]: error}));
+          setErrors((prev) => ({ ...prev, [name]: error }));
           return false;
         } else {
-          setErrors(prev => {
-            const newErrors = {...prev};
+          setErrors((prev) => {
+            const newErrors = { ...prev };
             delete newErrors[name];
             return newErrors;
           });
@@ -65,7 +65,7 @@ export const useForm = <T extends Record<string, any>>({
     let isValid = true;
     const newErrors: Partial<Record<keyof T, string>> = {};
 
-    Object.keys(validationRules).forEach(key => {
+    Object.keys(validationRules).forEach((key) => {
       const error = validationRules[key](values[key as keyof T], values);
       if (error) {
         newErrors[key as keyof T] = error;
@@ -80,12 +80,12 @@ export const useForm = <T extends Record<string, any>>({
   const handleChange = useCallback(
     (name: keyof T) => {
       return (value: any) => {
-        setValues(prev => ({...prev, [name]: value}));
+        setValues((prev) => ({ ...prev, [name]: value }));
 
         // Clear error when user starts typing
         if (errors[name]) {
-          setErrors(prev => {
-            const newErrors = {...prev};
+          setErrors((prev) => {
+            const newErrors = { ...prev };
             delete newErrors[name];
             return newErrors;
           });
@@ -98,7 +98,7 @@ export const useForm = <T extends Record<string, any>>({
   const handleBlur = useCallback(
     (name: keyof T) => {
       return () => {
-        setTouched(prev => ({...prev, [name]: true}));
+        setTouched((prev) => ({ ...prev, [name]: true }));
         validateField(name);
       };
     },
@@ -106,11 +106,11 @@ export const useForm = <T extends Record<string, any>>({
   );
 
   const setFieldValue = useCallback((name: keyof T, value: any) => {
-    setValues(prev => ({...prev, [name]: value}));
+    setValues((prev) => ({ ...prev, [name]: value }));
   }, []);
 
   const setFieldError = useCallback((name: keyof T, error: string) => {
-    setErrors(prev => ({...prev, [name]: error}));
+    setErrors((prev) => ({ ...prev, [name]: error }));
   }, []);
 
   const resetForm = useCallback(() => {
@@ -140,7 +140,7 @@ export const useForm = <T extends Record<string, any>>({
     try {
       await onSubmit(values);
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error("Form submission error:", error);
     } finally {
       setIsSubmitting(false);
     }

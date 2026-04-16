@@ -1,11 +1,11 @@
-import {fireEvent, render, waitFor} from '@testing-library/react-native';
-import {PaperProvider} from 'react-native-paper'; // Assuming react-native-paper is used for UI components
-import {AuthContext} from '../../../../../contexts/AuthContext';
-import LoginScreen from '../LoginScreen';
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import { PaperProvider } from "react-native-paper"; // Assuming react-native-paper is used for UI components
+import { AuthContext } from "../../../../../contexts/AuthContext";
+import LoginScreen from "../LoginScreen";
 
 // Mock navigation
 const mockNavigate = jest.fn();
-const mockNavigation = {navigate: mockNavigate};
+const mockNavigation = { navigate: mockNavigate };
 
 // Mock AuthContext
 const mockLogin = jest.fn();
@@ -24,13 +24,13 @@ const mockAuthContextValue = {
 };
 
 // Custom wrapper to provide necessary contexts and theme
-const AllTheProviders = ({children}) => (
+const AllTheProviders = ({ children }) => (
   <AuthContext.Provider value={mockAuthContextValue}>
     <PaperProvider>{children}</PaperProvider>
   </AuthContext.Provider>
 );
 
-describe('LoginScreen', () => {
+describe("LoginScreen", () => {
   beforeEach(() => {
     // Reset mocks before each test
     mockLogin.mockClear();
@@ -42,113 +42,113 @@ describe('LoginScreen', () => {
     mockAuthContextValue.error = mockAuthError;
   });
 
-  it('renders correctly with all form elements', () => {
-    const {getByText, getByLabelText} = render(
+  it("renders correctly with all form elements", () => {
+    const { getByText, getByLabelText } = render(
       <LoginScreen navigation={mockNavigation} />,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
-    expect(getByText('Welcome Back')).toBeTruthy();
-    expect(getByText('Login to your LendSmart account')).toBeTruthy();
-    expect(getByLabelText('Email')).toBeTruthy();
-    expect(getByLabelText('Password')).toBeTruthy();
-    expect(getByText('Login')).toBeTruthy(); // Button text
+    expect(getByText("Welcome Back")).toBeTruthy();
+    expect(getByText("Login to your LendSmart account")).toBeTruthy();
+    expect(getByLabelText("Email")).toBeTruthy();
+    expect(getByLabelText("Password")).toBeTruthy();
+    expect(getByText("Login")).toBeTruthy(); // Button text
     expect(getByText("Don't have an account? Register")).toBeTruthy();
   });
 
-  it('allows typing in email and password fields', () => {
-    const {getByLabelText} = render(
+  it("allows typing in email and password fields", () => {
+    const { getByLabelText } = render(
       <LoginScreen navigation={mockNavigation} />,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
-    const emailInput = getByLabelText('Email');
-    const passwordInput = getByLabelText('Password');
+    const emailInput = getByLabelText("Email");
+    const passwordInput = getByLabelText("Password");
 
-    fireEvent.changeText(emailInput, 'test@example.com');
-    fireEvent.changeText(passwordInput, 'password123');
+    fireEvent.changeText(emailInput, "test@example.com");
+    fireEvent.changeText(passwordInput, "password123");
 
-    expect(emailInput.props.value).toBe('test@example.com');
-    expect(passwordInput.props.value).toBe('password123');
+    expect(emailInput.props.value).toBe("test@example.com");
+    expect(passwordInput.props.value).toBe("password123");
   });
 
-  it('shows validation errors for invalid input', async () => {
-    const {getByText, getByLabelText} = render(
+  it("shows validation errors for invalid input", async () => {
+    const { getByText, getByLabelText } = render(
       <LoginScreen navigation={mockNavigation} />,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
-    const loginButton = getByText('Login');
+    const loginButton = getByText("Login");
 
     // Test with empty fields
     fireEvent.press(loginButton);
     await waitFor(() => {
-      expect(getByText('Required')).toBeTruthy(); // For email
+      expect(getByText("Required")).toBeTruthy(); // For email
       // Yup might show multiple 'Required' if both are empty, or specific messages
     });
 
     // Test with invalid email
-    const emailInput = getByLabelText('Email');
-    fireEvent.changeText(emailInput, 'invalid-email');
+    const emailInput = getByLabelText("Email");
+    fireEvent.changeText(emailInput, "invalid-email");
     fireEvent.press(loginButton);
     await waitFor(() => {
-      expect(getByText('Invalid email')).toBeTruthy();
+      expect(getByText("Invalid email")).toBeTruthy();
     });
 
     // Test with short password
-    const passwordInput = getByLabelText('Password');
-    fireEvent.changeText(passwordInput, '123');
+    const passwordInput = getByLabelText("Password");
+    fireEvent.changeText(passwordInput, "123");
     fireEvent.press(loginButton);
     await waitFor(() => {
-      expect(getByText('Password too short')).toBeTruthy();
+      expect(getByText("Password too short")).toBeTruthy();
     });
   });
 
-  it('calls login function from AuthContext on valid submission', async () => {
-    mockLogin.mockResolvedValueOnce({success: true}); // Assume login resolves successfully
-    const {getByText, getByLabelText} = render(
+  it("calls login function from AuthContext on valid submission", async () => {
+    mockLogin.mockResolvedValueOnce({ success: true }); // Assume login resolves successfully
+    const { getByText, getByLabelText } = render(
       <LoginScreen navigation={mockNavigation} />,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
-    const emailInput = getByLabelText('Email');
-    const passwordInput = getByLabelText('Password');
-    const loginButton = getByText('Login');
+    const emailInput = getByLabelText("Email");
+    const passwordInput = getByLabelText("Password");
+    const loginButton = getByText("Login");
 
-    fireEvent.changeText(emailInput, 'test@example.com');
-    fireEvent.changeText(passwordInput, 'password123');
+    fireEvent.changeText(emailInput, "test@example.com");
+    fireEvent.changeText(passwordInput, "password123");
     fireEvent.press(loginButton);
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledTimes(1);
       expect(mockLogin).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'password123',
+        email: "test@example.com",
+        password: "password123",
       });
     });
   });
 
-  it('displays loading indicator when auth is loading', () => {
+  it("displays loading indicator when auth is loading", () => {
     mockAuthContextValue.loading = true;
-    const {getByText, getByTestId} = render(
+    const { getByText, getByTestId } = render(
       <LoginScreen navigation={mockNavigation} />,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
     // react-native-paper Button's loading prop shows an ActivityIndicator
     // We check if the button is disabled and shows loading state
-    const loginButton = getByText('Login').parent.parent; // Access the Button component itself
+    const loginButton = getByText("Login").parent.parent; // Access the Button component itself
     expect(loginButton.props.loading).toBe(true);
     expect(loginButton.props.disabled).toBe(true);
   });
 
-  it('displays error message from AuthContext if login fails', async () => {
-    const errorMessage = 'Invalid credentials, please try again.';
+  it("displays error message from AuthContext if login fails", async () => {
+    const errorMessage = "Invalid credentials, please try again.";
     mockAuthContextValue.error = errorMessage;
-    mockLogin.mockRejectedValueOnce(new Error('Login failed')); // Simulate login failure
+    mockLogin.mockRejectedValueOnce(new Error("Login failed")); // Simulate login failure
 
-    const {getByText, getByLabelText} = render(
+    const { getByText, getByLabelText } = render(
       <LoginScreen navigation={mockNavigation} />,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
     // Even if login is not pressed, if error is in context, it should display
@@ -156,9 +156,9 @@ describe('LoginScreen', () => {
 
     // Also test if error appears after a failed login attempt
     mockAuthContextValue.error = null; // Reset error before attempting login
-    fireEvent.changeText(getByLabelText('Email'), 'fail@example.com');
-    fireEvent.changeText(getByLabelText('Password'), 'wrongpassword');
-    fireEvent.press(getByText('Login'));
+    fireEvent.changeText(getByLabelText("Email"), "fail@example.com");
+    fireEvent.changeText(getByLabelText("Password"), "wrongpassword");
+    fireEvent.press(getByText("Login"));
 
     await waitFor(() => {
       // Simulate error being set in context after API call
@@ -171,13 +171,13 @@ describe('LoginScreen', () => {
   });
 
   it('navigates to Register screen when "Register" button is pressed', () => {
-    const {getByText} = render(<LoginScreen navigation={mockNavigation} />, {
+    const { getByText } = render(<LoginScreen navigation={mockNavigation} />, {
       wrapper: AllTheProviders,
     });
 
     const registerButton = getByText("Don't have an account? Register");
     fireEvent.press(registerButton);
 
-    expect(mockNavigate).toHaveBeenCalledWith('Register');
+    expect(mockNavigate).toHaveBeenCalledWith("Register");
   });
 });

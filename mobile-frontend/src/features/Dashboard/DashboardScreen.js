@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types';
-import React, {useCallback, useContext, useEffect, useState} from 'react';
-import {RefreshControl, ScrollView, StyleSheet, View} from 'react-native';
+import PropTypes from "prop-types";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import {
   ActivityIndicator,
   Button,
@@ -8,14 +8,14 @@ import {
   Divider,
   Text,
   useTheme,
-} from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+} from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 // Removed direct import of spacing, use theme.spacing instead
-import {AuthContext} from '../../../contexts/AuthContext';
-import {getMyLoans} from '../../../services/apiService';
+import { AuthContext } from "../../../contexts/AuthContext";
+import { getMyLoans } from "../../../services/apiService";
 
-const DashboardScreen = ({navigation}) => {
-  const {user} = useContext(AuthContext);
+const DashboardScreen = ({ navigation }) => {
+  const { user } = useContext(AuthContext);
   const theme = useTheme();
   const styles = createStyles(theme);
   const [refreshing, setRefreshing] = useState(false);
@@ -38,7 +38,7 @@ const DashboardScreen = ({navigation}) => {
       // Calculate summary
       const summary = loans.reduce(
         (acc, loan) => {
-          if (loan.status === 'active' || loan.status === 'repaying') {
+          if (loan.status === "active" || loan.status === "repaying") {
             acc.activeLoans++;
           }
           if (loan.borrowerId === user?.id) {
@@ -59,20 +59,20 @@ const DashboardScreen = ({navigation}) => {
       setLoanSummary(summary);
 
       // Convert loans to activity items
-      const activities = loans.slice(0, 5).map(loan => ({
+      const activities = loans.slice(0, 5).map((loan) => ({
         id: loan.id,
-        type: loan.status === 'pending' ? 'Loan Application' : 'Loan Activity',
+        type: loan.status === "pending" ? "Loan Application" : "Loan Activity",
         amount: `$${loan.amount.toLocaleString()}`,
         date: new Date(loan.createdAt).toLocaleDateString(),
         status: loan.status.charAt(0).toUpperCase() + loan.status.slice(1),
         icon:
-          loan.status === 'active'
-            ? 'cash-check'
-            : 'file-document-edit-outline',
+          loan.status === "active"
+            ? "cash-check"
+            : "file-document-edit-outline",
       }));
       setRecentActivity(activities);
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      console.error("Failed to fetch dashboard data:", error);
       // Use placeholder data on error
       setRecentActivity(placeholderActivity);
     } finally {
@@ -94,35 +94,35 @@ const DashboardScreen = ({navigation}) => {
   const placeholderActivity = [
     {
       id: 1,
-      type: 'Loan Funded',
-      amount: '$1,000',
-      date: '2025-04-25',
-      status: 'Completed',
-      icon: 'cash-check',
+      type: "Loan Funded",
+      amount: "$1,000",
+      date: "2025-04-25",
+      status: "Completed",
+      icon: "cash-check",
     },
     {
       id: 2,
-      type: 'Loan Repayment',
-      amount: '$250',
-      date: '2025-04-20',
-      status: 'Completed',
-      icon: 'cash-refund',
+      type: "Loan Repayment",
+      amount: "$250",
+      date: "2025-04-20",
+      status: "Completed",
+      icon: "cash-refund",
     },
     {
       id: 3,
-      type: 'Loan Application',
-      amount: '$2,000',
-      date: '2025-04-15',
-      status: 'Pending',
-      icon: 'file-document-edit-outline',
+      type: "Loan Application",
+      amount: "$2,000",
+      date: "2025-04-15",
+      status: "Pending",
+      icon: "file-document-edit-outline",
     },
     {
       id: 4,
-      type: 'New Listing Viewed',
-      description: 'Viewed loan #LND123',
-      date: '2025-04-28',
-      status: 'Info',
-      icon: 'eye-outline',
+      type: "New Listing Viewed",
+      description: "Viewed loan #LND123",
+      date: "2025-04-28",
+      status: "Info",
+      icon: "eye-outline",
     },
   ];
 
@@ -136,18 +136,18 @@ const DashboardScreen = ({navigation}) => {
     );
   }
 
-  const getStatusStyle = status => {
+  const getStatusStyle = (status) => {
     switch (status) {
-      case 'Completed':
-        return {color: theme.colors.success, icon: 'check-circle'};
-      case 'Pending':
-        return {color: theme.colors.warning, icon: 'clock-outline'};
-      case 'Failed':
-        return {color: theme.colors.error, icon: 'alert-circle-outline'};
+      case "Completed":
+        return { color: theme.colors.success, icon: "check-circle" };
+      case "Pending":
+        return { color: theme.colors.warning, icon: "clock-outline" };
+      case "Failed":
+        return { color: theme.colors.error, icon: "alert-circle-outline" };
       default:
         return {
           color: theme.colors.textSecondary,
-          icon: 'information-outline',
+          icon: "information-outline",
         };
     }
   };
@@ -161,11 +161,12 @@ const DashboardScreen = ({navigation}) => {
           onRefresh={onRefresh}
           tintColor={theme.colors.primary}
         />
-      }>
+      }
+    >
       {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.greeting}>
-          Hello, {user?.name?.split(' ')[0] || 'User'}!
+          Hello, {user?.name?.split(" ")[0] || "User"}!
         </Text>
         <Text style={styles.subGreeting}>Here's your financial overview</Text>
       </View>
@@ -229,7 +230,8 @@ const DashboardScreen = ({navigation}) => {
           contentStyle={styles.actionButtonContent}
           labelStyle={styles.actionButtonLabel}
           icon="plus-circle-outline"
-          onPress={() => navigation.navigate('Apply')}>
+          onPress={() => navigation.navigate("Apply")}
+        >
           Apply
         </Button>
         <Button
@@ -238,7 +240,8 @@ const DashboardScreen = ({navigation}) => {
           contentStyle={styles.actionButtonContent}
           labelStyle={styles.actionButtonLabel}
           icon="storefront-outline"
-          onPress={() => navigation.navigate('Marketplace')}>
+          onPress={() => navigation.navigate("Marketplace")}
+        >
           Market
         </Button>
         {/* Add more actions if needed, e.g., Wallet */}
@@ -279,8 +282,9 @@ const DashboardScreen = ({navigation}) => {
                       <Text
                         style={[
                           styles.activityStatus,
-                          {color: statusInfo.color},
-                        ]}>
+                          { color: statusInfo.color },
+                        ]}
+                      >
                         {activity.status}
                       </Text>
                     </View>
@@ -309,7 +313,7 @@ DashboardScreen.propTypes = {
 };
 
 // Updated createStyles using modernized theme
-const createStyles = theme =>
+const createStyles = (theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -317,8 +321,8 @@ const createStyles = theme =>
     },
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       backgroundColor: theme.colors.background,
     },
     header: {
@@ -352,13 +356,13 @@ const createStyles = theme =>
       marginBottom: theme.spacing.md,
     },
     summaryGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap', // Arrange items in a grid
-      justifyContent: 'space-around',
+      flexDirection: "row",
+      flexWrap: "wrap", // Arrange items in a grid
+      justifyContent: "space-around",
     },
     summaryItem: {
-      alignItems: 'center',
-      width: '45%', // Roughly two items per row
+      alignItems: "center",
+      width: "45%", // Roughly two items per row
       marginBottom: theme.spacing.md,
       paddingVertical: theme.spacing.sm,
     },
@@ -375,8 +379,8 @@ const createStyles = theme =>
       marginTop: theme.spacing.xxs,
     },
     actionsContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-around', // Space out buttons
+      flexDirection: "row",
+      justifyContent: "space-around", // Space out buttons
       paddingHorizontal: theme.spacing.lg,
       marginBottom: theme.spacing.lg,
     },
@@ -409,8 +413,8 @@ const createStyles = theme =>
       // Removed margin bottom, using divider instead
     },
     activityCardContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       paddingVertical: theme.spacing.md,
       paddingHorizontal: theme.spacing.md,
     },
@@ -438,7 +442,7 @@ const createStyles = theme =>
       marginTop: theme.spacing.xs,
     },
     activityAmountStatus: {
-      alignItems: 'flex-end',
+      alignItems: "flex-end",
     },
     activityAmount: {
       fontSize: theme.fontSizes.body1,
@@ -456,7 +460,7 @@ const createStyles = theme =>
       backgroundColor: theme.colors.border,
     },
     noActivityText: {
-      textAlign: 'center',
+      textAlign: "center",
       color: theme.colors.textSecondary,
       marginTop: theme.spacing.lg,
       fontFamily: theme.fonts.primary,

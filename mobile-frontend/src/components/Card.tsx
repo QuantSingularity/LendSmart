@@ -1,6 +1,6 @@
-import type React from 'react';
-import {StyleSheet, type ViewStyle} from 'react-native';
-import {Card as PaperCard, useTheme} from 'react-native-paper';
+import type React from "react";
+import { StyleSheet, type ViewStyle } from "react-native";
+import { Card as PaperCard, useTheme } from "react-native-paper";
 
 interface CardProps {
   children: React.ReactNode;
@@ -19,9 +19,10 @@ const Card: React.FC<CardProps> = ({
 
   return (
     <PaperCard
-      style={[styles.card, {backgroundColor: theme.colors.surface}, style]}
+      style={[styles.card, { backgroundColor: theme.colors.surface }, style]}
       elevation={elevation}
-      onPress={onPress}>
+      onPress={onPress}
+    >
       {children}
     </PaperCard>
   );

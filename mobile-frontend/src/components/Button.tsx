@@ -1,9 +1,9 @@
-import type React from 'react';
-import {StyleSheet, type TextStyle, type ViewStyle} from 'react-native';
-import {Button as PaperButton, useTheme} from 'react-native-paper';
+import type React from "react";
+import { StyleSheet, type TextStyle, type ViewStyle } from "react-native";
+import { Button as PaperButton, useTheme } from "react-native-paper";
 
 interface ButtonProps {
-  mode?: 'text' | 'outlined' | 'contained';
+  mode?: "text" | "outlined" | "contained";
   onPress: () => void;
   children: React.ReactNode;
   disabled?: boolean;
@@ -17,7 +17,7 @@ interface ButtonProps {
 }
 
 const Button: React.FC<ButtonProps> = ({
-  mode = 'contained',
+  mode = "contained",
   onPress,
   children,
   disabled = false,
@@ -40,9 +40,10 @@ const Button: React.FC<ButtonProps> = ({
       icon={icon}
       style={[styles.button, style]}
       contentStyle={[styles.content, contentStyle]}
-      labelStyle={[{fontFamily: theme.fonts.primarySemiBold}, labelStyle]}
+      labelStyle={[{ fontFamily: theme.fonts.primarySemiBold }, labelStyle]}
       uppercase={uppercase}
-      compact={compact}>
+      compact={compact}
+    >
       {children}
     </PaperButton>
   );

@@ -1,9 +1,15 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-community/netinfo';
-import PropTypes from 'prop-types';
-import {createContext, useCallback, useEffect, useMemo, useState} from 'react';
-import * as Keychain from 'react-native-keychain';
-import apiService from '../services/apiService';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from "@react-native-community/netinfo";
+import PropTypes from "prop-types";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import * as Keychain from "react-native-keychain";
+import apiService from "../services/apiService";
 
 export const AuthContext = createContext({
   user: null,
@@ -11,23 +17,23 @@ export const AuthContext = createContext({
   isAuthenticated: false,
   isLoading: true,
   error: null,
-  login: async _credentials => {},
+  login: async (_credentials) => {},
   logout: async () => {},
-  register: async _userData => {},
-  updateProfile: async _userData => {},
-  resetPassword: async _email => {},
-  verifyEmail: async _code => {},
+  register: async (_userData) => {},
+  updateProfile: async (_userData) => {},
+  resetPassword: async (_email) => {},
+  verifyEmail: async (_code) => {},
   refreshToken: async () => {},
   clearError: () => {},
   checkAuthStatus: async () => {},
 });
 
-const AUTH_KEY = 'userAuthData';
-const TOKEN_EXPIRY_KEY = 'tokenExpiry';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-const BIOMETRIC_ENABLED_KEY = 'biometricEnabled';
+const AUTH_KEY = "userAuthData";
+const TOKEN_EXPIRY_KEY = "tokenExpiry";
+const REFRESH_TOKEN_KEY = "refreshToken";
+const BIOMETRIC_ENABLED_KEY = "biometricEnabled";
 
-export const AuthProvider = ({children}) => {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
@@ -39,12 +45,12 @@ export const AuthProvider = ({children}) => {
 
   // Monitor network connectivity
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
       setIsConnected(state.isConnected);
       if (!state.isConnected) {
-        console.log('Network connection lost');
+        console.log("Network connection lost");
       } else if (state.isConnected && !isConnected) {
-        console.log('Network connection restored');
+        console.log("Network connection restored");
         checkAuthStatus(); // Verify token when connection is restored
       }
     });
@@ -62,7 +68,7 @@ export const AuthProvider = ({children}) => {
         const biometricEnabledStr = await AsyncStorage.getItem(
           BIOMETRIC_ENABLED_KEY,
         );
-        const isBiometricEnabled = biometricEnabledStr === 'true';
+        const isBiometricEnabled = biometricEnabledStr === "true";
         setBiometricEnabled(isBiometricEnabled);
 
         // Get credentials from secure storage
@@ -92,7 +98,7 @@ export const AuthProvider = ({children}) => {
                 try {
                   await refreshTokenHandler(storedRefreshToken);
                 } catch (refreshError) {
-                  console.error('Failed to refresh token:', refreshError);
+                  console.error("Failed to refresh token:", refreshError);
                   await clearAuthData();
                   setUser(null);
                   setToken(null);
@@ -128,7 +134,7 @@ export const AuthProvider = ({children}) => {
           }
         }
       } catch (err) {
-        console.error('Failed to load auth data:', err);
+        console.error("Failed to load auth data:", err);
         await clearAuthData();
       } finally {
         setIsLoading(false);
@@ -143,14 +149,14 @@ export const AuthProvider = ({children}) => {
   ]);
 
   // Verify token with backend
-  const verifyToken = async authToken => {
+  const verifyToken = async (authToken) => {
     if (!authToken || !isConnected) return false;
 
     try {
-      const _response = await apiService.get('/auth/verify');
+      const _response = await apiService.get("/auth/verify");
       return true;
     } catch (err) {
-      console.error('Token verification failed:', err);
+      console.error("Token verification failed:", err);
 
       // If token is invalid, try to refresh
       if (refreshToken) {
@@ -159,7 +165,7 @@ export const AuthProvider = ({children}) => {
           return true;
         } catch (refreshError) {
           console.error(
-            'Failed to refresh token during verification:',
+            "Failed to refresh token during verification:",
             refreshError,
           );
           await clearAuthData();
@@ -184,8 +190,8 @@ export const AuthProvider = ({children}) => {
     expiresIn,
   ) => {
     try {
-      const dataToStore = JSON.stringify({token: newToken, user: userData});
-      await Keychain.setGenericPassword('user', dataToStore, {
+      const dataToStore = JSON.stringify({ token: newToken, user: userData });
+      await Keychain.setGenericPassword("user", dataToStore, {
         service: AUTH_KEY,
       });
 
@@ -213,31 +219,31 @@ export const AuthProvider = ({children}) => {
         }
       }
     } catch (err) {
-      console.error('Failed to store auth data:', err);
-      setError('Failed to save session data.');
+      console.error("Failed to store auth data:", err);
+      setError("Failed to save session data.");
     }
   };
 
   // Clear all auth data
   const clearAuthData = async () => {
     try {
-      await Keychain.resetGenericPassword({service: AUTH_KEY});
+      await Keychain.resetGenericPassword({ service: AUTH_KEY });
       await AsyncStorage.removeItem(TOKEN_EXPIRY_KEY);
       await AsyncStorage.removeItem(REFRESH_TOKEN_KEY);
       apiService.clearAuthToken();
     } catch (err) {
-      console.error('Failed to clear auth data:', err);
+      console.error("Failed to clear auth data:", err);
     }
   };
 
   // Refresh token handler
-  const refreshTokenHandler = async currentRefreshToken => {
+  const refreshTokenHandler = async (currentRefreshToken) => {
     if (!currentRefreshToken || !isConnected) {
-      throw new Error('No refresh token available or no network connection');
+      throw new Error("No refresh token available or no network connection");
     }
 
     try {
-      const response = await apiService.post('/auth/refresh', {
+      const response = await apiService.post("/auth/refresh", {
         refreshToken: currentRefreshToken,
       });
       const {
@@ -262,10 +268,10 @@ export const AuthProvider = ({children}) => {
         );
         return newToken;
       } else {
-        throw new Error('Invalid refresh response');
+        throw new Error("Invalid refresh response");
       }
     } catch (err) {
-      console.error('Token refresh failed:', err);
+      console.error("Token refresh failed:", err);
       await clearAuthData();
       setUser(null);
       setToken(null);
@@ -279,16 +285,16 @@ export const AuthProvider = ({children}) => {
     async (credentials, useBiometric = false) => {
       if (!isConnected) {
         setError(
-          'No internet connection. Please check your network and try again.',
+          "No internet connection. Please check your network and try again.",
         );
-        throw new Error('No internet connection');
+        throw new Error("No internet connection");
       }
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await apiService.post('/auth/login', credentials);
+        const response = await apiService.post("/auth/login", credentials);
         const {
           token: newToken,
           refreshToken: newRefreshToken,
@@ -312,14 +318,14 @@ export const AuthProvider = ({children}) => {
           await storeAuthData(newToken, userData, newRefreshToken, expiresIn);
           return userData;
         } else {
-          throw new Error('Invalid login response from server');
+          throw new Error("Invalid login response from server");
         }
       } catch (err) {
-        console.error('Login failed:', err);
+        console.error("Login failed:", err);
         const message =
           err.response?.data?.message ||
           err.message ||
-          'Login failed. Please check your credentials.';
+          "Login failed. Please check your credentials.";
         setError(message);
         await clearAuthData();
         throw new Error(message);
@@ -338,10 +344,10 @@ export const AuthProvider = ({children}) => {
     try {
       if (isConnected && token) {
         // Attempt to notify backend about logout
-        await apiService.post('/auth/logout');
+        await apiService.post("/auth/logout");
       }
     } catch (err) {
-      console.warn('Backend logout failed (continuing local logout):', err);
+      console.warn("Backend logout failed (continuing local logout):", err);
     } finally {
       setUser(null);
       setToken(null);
@@ -353,26 +359,26 @@ export const AuthProvider = ({children}) => {
 
   // Register handler
   const register = useCallback(
-    async userData => {
+    async (userData) => {
       if (!isConnected) {
         setError(
-          'No internet connection. Please check your network and try again.',
+          "No internet connection. Please check your network and try again.",
         );
-        throw new Error('No internet connection');
+        throw new Error("No internet connection");
       }
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await apiService.post('/auth/register', userData);
+        const response = await apiService.post("/auth/register", userData);
         return response.data;
       } catch (err) {
-        console.error('Registration failed:', err);
+        console.error("Registration failed:", err);
         const message =
           err.response?.data?.message ||
           err.message ||
-          'Registration failed. Please try again.';
+          "Registration failed. Please try again.";
         setError(message);
         throw new Error(message);
       } finally {
@@ -384,34 +390,34 @@ export const AuthProvider = ({children}) => {
 
   // Update profile handler
   const updateProfile = useCallback(
-    async userData => {
+    async (userData) => {
       if (!isConnected) {
         setError(
-          'No internet connection. Please check your network and try again.',
+          "No internet connection. Please check your network and try again.",
         );
-        throw new Error('No internet connection');
+        throw new Error("No internet connection");
       }
 
       if (!token) {
-        setError('You must be logged in to update your profile.');
-        throw new Error('Authentication required');
+        setError("You must be logged in to update your profile.");
+        throw new Error("Authentication required");
       }
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await apiService.put('/users/profile', userData);
+        const response = await apiService.put("/users/profile", userData);
         const updatedUser = response.data;
 
         // Update local user data
-        setUser(prevUser => ({...prevUser, ...updatedUser}));
+        setUser((prevUser) => ({ ...prevUser, ...updatedUser }));
 
         // Update stored user data
         if (user && token) {
           await storeAuthData(
             token,
-            {...user, ...updatedUser},
+            { ...user, ...updatedUser },
             refreshToken,
             tokenExpiry
               ? Math.floor((tokenExpiry - Date.now()) / 1000)
@@ -421,11 +427,11 @@ export const AuthProvider = ({children}) => {
 
         return updatedUser;
       } catch (err) {
-        console.error('Profile update failed:', err);
+        console.error("Profile update failed:", err);
         const message =
           err.response?.data?.message ||
           err.message ||
-          'Failed to update profile. Please try again.';
+          "Failed to update profile. Please try again.";
         setError(message);
         throw new Error(message);
       } finally {
@@ -437,28 +443,28 @@ export const AuthProvider = ({children}) => {
 
   // Reset password handler
   const resetPassword = useCallback(
-    async email => {
+    async (email) => {
       if (!isConnected) {
         setError(
-          'No internet connection. Please check your network and try again.',
+          "No internet connection. Please check your network and try again.",
         );
-        throw new Error('No internet connection');
+        throw new Error("No internet connection");
       }
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await apiService.post('/auth/reset-password', {
+        const response = await apiService.post("/auth/reset-password", {
           email,
         });
         return response.data;
       } catch (err) {
-        console.error('Password reset request failed:', err);
+        console.error("Password reset request failed:", err);
         const message =
           err.response?.data?.message ||
           err.message ||
-          'Failed to request password reset. Please try again.';
+          "Failed to request password reset. Please try again.";
         setError(message);
         throw new Error(message);
       } finally {
@@ -470,29 +476,29 @@ export const AuthProvider = ({children}) => {
 
   // Verify email handler
   const verifyEmail = useCallback(
-    async code => {
+    async (code) => {
       if (!isConnected) {
         setError(
-          'No internet connection. Please check your network and try again.',
+          "No internet connection. Please check your network and try again.",
         );
-        throw new Error('No internet connection');
+        throw new Error("No internet connection");
       }
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await apiService.post('/auth/verify-email', {code});
+        const response = await apiService.post("/auth/verify-email", { code });
 
         // If verification updates user data, update local state
         if (response.data.user) {
-          setUser(prevUser => ({...prevUser, ...response.data.user}));
+          setUser((prevUser) => ({ ...prevUser, ...response.data.user }));
 
           // Update stored user data
           if (user && token) {
             await storeAuthData(
               token,
-              {...user, ...response.data.user},
+              { ...user, ...response.data.user },
               refreshToken,
               tokenExpiry
                 ? Math.floor((tokenExpiry - Date.now()) / 1000)
@@ -503,11 +509,11 @@ export const AuthProvider = ({children}) => {
 
         return response.data;
       } catch (err) {
-        console.error('Email verification failed:', err);
+        console.error("Email verification failed:", err);
         const message =
           err.response?.data?.message ||
           err.message ||
-          'Failed to verify email. Please try again.';
+          "Failed to verify email. Please try again.";
         setError(message);
         throw new Error(message);
       } finally {
@@ -520,8 +526,8 @@ export const AuthProvider = ({children}) => {
   // Refresh token (exposed for manual refresh)
   const refreshTokenManual = useCallback(async () => {
     if (!refreshToken) {
-      setError('No refresh token available.');
-      throw new Error('No refresh token available');
+      setError("No refresh token available.");
+      throw new Error("No refresh token available");
     }
 
     setIsLoading(true);
@@ -531,7 +537,7 @@ export const AuthProvider = ({children}) => {
       const newToken = await refreshTokenHandler(refreshToken);
       return newToken;
     } catch (_err) {
-      const message = 'Failed to refresh authentication. Please log in again.';
+      const message = "Failed to refresh authentication. Please log in again.";
       setError(message);
       throw new Error(message);
     } finally {
@@ -553,7 +559,7 @@ export const AuthProvider = ({children}) => {
       const isValid = await verifyToken(token);
       return isValid;
     } catch (err) {
-      console.error('Auth status check failed:', err);
+      console.error("Auth status check failed:", err);
       return false;
     } finally {
       setIsLoading(false);
@@ -561,13 +567,13 @@ export const AuthProvider = ({children}) => {
   }, [token, isConnected, verifyToken]);
 
   // Toggle biometric authentication
-  const toggleBiometric = useCallback(async enabled => {
+  const toggleBiometric = useCallback(async (enabled) => {
     try {
       await AsyncStorage.setItem(BIOMETRIC_ENABLED_KEY, enabled.toString());
       setBiometricEnabled(enabled);
       return true;
     } catch (err) {
-      console.error('Failed to toggle biometric authentication:', err);
+      console.error("Failed to toggle biometric authentication:", err);
       return false;
     }
   }, []);

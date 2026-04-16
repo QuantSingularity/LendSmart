@@ -1,12 +1,12 @@
-import PropTypes from 'prop-types';
-import React, {useEffect, useState} from 'react';
+import PropTypes from "prop-types";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
   View,
-} from 'react-native';
+} from "react-native";
 import {
   Button,
   Card,
@@ -14,60 +14,60 @@ import {
   Searchbar,
   Text,
   useTheme,
-} from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+} from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 // Removed direct import of spacing, use theme.spacing instead
-import {getMarketplaceLoans} from '../../../services/apiService';
+import { getMarketplaceLoans } from "../../../services/apiService";
 
 // Placeholder data for marketplace loans
 const _placeholderLoans = [
   {
-    id: '1',
+    id: "1",
     amount: 1500,
     interestRate: 8.5,
     term: 12,
-    purpose: 'Debt Consolidation',
-    creditScoreRange: '650-700',
-    status: 'Available',
+    purpose: "Debt Consolidation",
+    creditScoreRange: "650-700",
+    status: "Available",
     fundedAmount: 0,
   },
   {
-    id: '2',
+    id: "2",
     amount: 500,
     interestRate: 12.0,
     term: 6,
-    purpose: 'Small Business',
-    creditScoreRange: '600-650',
-    status: 'Available',
+    purpose: "Small Business",
+    creditScoreRange: "600-650",
+    status: "Available",
     fundedAmount: 100,
   },
   {
-    id: '3',
+    id: "3",
     amount: 3000,
     interestRate: 7.0,
     term: 24,
-    purpose: 'Home Improvement',
-    creditScoreRange: '700+',
-    status: 'Available',
+    purpose: "Home Improvement",
+    creditScoreRange: "700+",
+    status: "Available",
     fundedAmount: 0,
   },
   {
-    id: '4',
+    id: "4",
     amount: 1000,
     interestRate: 9.0,
     term: 9,
-    purpose: 'Education',
-    creditScoreRange: '680-720',
-    status: 'Funded',
+    purpose: "Education",
+    creditScoreRange: "680-720",
+    status: "Funded",
     fundedAmount: 1000,
   },
 ];
 
 // Added navigation prop back
-const MarketplaceScreen = ({navigation}) => {
+const MarketplaceScreen = ({ navigation }) => {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -80,12 +80,12 @@ const MarketplaceScreen = ({navigation}) => {
       // Fetch loans from API
       const response = await getMarketplaceLoans({
         search: searchQuery,
-        status: 'pending,approved', // Only show loans available for funding
+        status: "pending,approved", // Only show loans available for funding
       });
       setLoans(response.data || []);
     } catch (err) {
-      console.error('Failed to fetch loans:', err);
-      setError('Failed to load loan marketplace. Please try again.');
+      console.error("Failed to fetch loans:", err);
+      setError("Failed to load loan marketplace. Please try again.");
       // setLoans([]); // Clear loans on error or keep placeholders?
     } finally {
       if (!isRefreshing) setLoading(false);
@@ -103,18 +103,18 @@ const MarketplaceScreen = ({navigation}) => {
     fetchLoans(true);
   }, [fetchLoans]);
 
-  const onChangeSearch = query => setSearchQuery(query);
+  const onChangeSearch = (query) => setSearchQuery(query);
 
-  const handleViewDetails = loanId => {
-    navigation.navigate('LoanDetails', {loanId: loanId});
+  const handleViewDetails = (loanId) => {
+    navigation.navigate("LoanDetails", { loanId: loanId });
   };
 
-  const handleFundLoan = loanId => {
+  const handleFundLoan = (loanId) => {
     // Navigate to details screen where funding happens
-    navigation.navigate('LoanDetails', {loanId: loanId, focusFund: true});
+    navigation.navigate("LoanDetails", { loanId: loanId, focusFund: true });
   };
 
-  const renderLoanItem = ({item}) => {
+  const renderLoanItem = ({ item }) => {
     const fundedPercent =
       item.amount > 0 ? ((item.fundedAmount || 0) / item.amount) * 100 : 0;
     return (
@@ -124,24 +124,25 @@ const MarketplaceScreen = ({navigation}) => {
           subtitle={`${item.interestRate}% APR | ${item.term} Months`}
           titleStyle={styles.cardTitle}
           subtitleStyle={styles.cardSubtitle}
-          right={props => (
+          right={(props) => (
             <Chip
               {...props}
               icon={
-                item.status === 'Available'
-                  ? 'check-circle-outline'
-                  : 'information-outline'
+                item.status === "Available"
+                  ? "check-circle-outline"
+                  : "information-outline"
               }
               style={[
                 styles.statusChip,
                 {
                   backgroundColor:
-                    item.status === 'Available'
+                    item.status === "Available"
                       ? theme.colors.success
                       : theme.colors.disabled,
                 },
               ]}
-              textStyle={styles.statusChipText}>
+              textStyle={styles.statusChipText}
+            >
               {item.status}
             </Chip>
           )}
@@ -169,7 +170,7 @@ const MarketplaceScreen = ({navigation}) => {
             </Text>
           </View>
           {/* Funding Progress Bar */}
-          {item.status === 'Available' && item.fundedAmount > 0 && (
+          {item.status === "Available" && item.fundedAmount > 0 && (
             <View style={styles.progressContainer}>
               <View
                 style={[
@@ -183,23 +184,25 @@ const MarketplaceScreen = ({navigation}) => {
             </View>
           )}
           <Text style={styles.fundedText}>
-            {item.status === 'Funded'
-              ? 'Fully Funded'
+            {item.status === "Funded"
+              ? "Fully Funded"
               : `$${(item.fundedAmount || 0).toLocaleString()} / $${item.amount.toLocaleString()} funded (${fundedPercent.toFixed(0)}%)`}
           </Text>
         </Card.Content>
         <Card.Actions style={styles.cardActions}>
           <Button
             icon="information-outline"
-            onPress={() => handleViewDetails(item.id)}>
+            onPress={() => handleViewDetails(item.id)}
+          >
             Details
           </Button>
           <Button
             mode="contained"
             icon="cash-plus"
-            disabled={item.status !== 'Available'}
+            disabled={item.status !== "Available"}
             onPress={() => handleFundLoan(item.id)}
-            style={styles.fundButton}>
+            style={styles.fundButton}
+          >
             Fund
           </Button>
         </Card.Actions>
@@ -230,7 +233,7 @@ const MarketplaceScreen = ({navigation}) => {
         <FlatList
           data={loans}
           renderItem={renderLoanItem}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContainer}
           refreshControl={
             <RefreshControl
@@ -269,7 +272,7 @@ MarketplaceScreen.propTypes = {
   }).isRequired,
 };
 
-const createStyles = theme =>
+const createStyles = (theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -284,18 +287,18 @@ const createStyles = theme =>
     },
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     errorContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       padding: theme.spacing.lg,
     },
     errorText: {
       color: theme.colors.error,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: theme.spacing.md,
       fontSize: theme.fontSizes.body1,
       fontFamily: theme.fonts.primary,
@@ -327,17 +330,17 @@ const createStyles = theme =>
     statusChip: {
       paddingHorizontal: theme.spacing.sm,
       height: 24,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     statusChipText: {
-      color: '#fff',
+      color: "#fff",
       fontFamily: theme.fonts.primaryMedium,
       fontSize: theme.fontSizes.caption,
     },
     detailRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       marginBottom: theme.spacing.sm,
     },
     detailIcon: {
@@ -354,20 +357,20 @@ const createStyles = theme =>
       backgroundColor: theme.colors.border,
       borderRadius: theme.borderRadius.sm,
       marginTop: theme.spacing.sm,
-      overflow: 'hidden',
+      overflow: "hidden",
     },
     progressBar: {
-      height: '100%',
+      height: "100%",
     },
     fundedText: {
       fontFamily: theme.fonts.primary,
       fontSize: theme.fontSizes.caption,
       color: theme.colors.textSecondary,
       marginTop: theme.spacing.xs,
-      textAlign: 'right',
+      textAlign: "right",
     },
     cardActions: {
-      justifyContent: 'space-between',
+      justifyContent: "space-between",
       paddingHorizontal: theme.spacing.sm, // Reduce padding slightly
     },
     fundButton: {
@@ -375,8 +378,8 @@ const createStyles = theme =>
     },
     emptyContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       marginTop: 80, // Adjust as needed
       paddingHorizontal: theme.spacing.xl,
     },
@@ -385,14 +388,14 @@ const createStyles = theme =>
       fontFamily: theme.fonts.primaryMedium,
       color: theme.colors.textSecondary,
       marginTop: theme.spacing.md,
-      textAlign: 'center',
+      textAlign: "center",
     },
     emptySubText: {
       fontSize: theme.fontSizes.body2,
       fontFamily: theme.fonts.primary,
       color: theme.colors.textTertiary,
       marginTop: theme.spacing.xs,
-      textAlign: 'center',
+      textAlign: "center",
     },
   });
 

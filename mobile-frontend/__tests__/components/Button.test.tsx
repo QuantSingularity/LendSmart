@@ -1,52 +1,52 @@
-import {fireEvent, render} from '@testing-library/react-native';
-import type React from 'react';
-import {Provider as PaperProvider} from 'react-native-paper';
-import Button from '../../src/components/Button';
+import { fireEvent, render } from "@testing-library/react-native";
+import type React from "react";
+import { Provider as PaperProvider } from "react-native-paper";
+import Button from "../../src/components/Button";
 
-const AllTheProviders = ({children}: {children: React.ReactNode}) => {
+const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return <PaperProvider>{children}</PaperProvider>;
 };
 
-describe('Button Component', () => {
-  it('renders correctly with text', () => {
-    const {getByText} = render(
+describe("Button Component", () => {
+  it("renders correctly with text", () => {
+    const { getByText } = render(
       <Button onPress={() => {}}>Test Button</Button>,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
-    expect(getByText('Test Button')).toBeTruthy();
+    expect(getByText("Test Button")).toBeTruthy();
   });
 
-  it('calls onPress when pressed', () => {
+  it("calls onPress when pressed", () => {
     const onPressMock = jest.fn();
-    const {getByText} = render(
+    const { getByText } = render(
       <Button onPress={onPressMock}>Press Me</Button>,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
-    fireEvent.press(getByText('Press Me'));
+    fireEvent.press(getByText("Press Me"));
     expect(onPressMock).toHaveBeenCalledTimes(1);
   });
 
-  it('is disabled when disabled prop is true', () => {
+  it("is disabled when disabled prop is true", () => {
     const onPressMock = jest.fn();
-    const {getByText} = render(
+    const { getByText } = render(
       <Button onPress={onPressMock} disabled>
         Disabled Button
       </Button>,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
-    const button = getByText('Disabled Button').parent;
+    const button = getByText("Disabled Button").parent;
     expect(button).toBeTruthy();
     // Note: react-native-paper handles disabled state internally
   });
 
-  it('shows loading indicator when loading prop is true', () => {
-    const {getByTestId} = render(
+  it("shows loading indicator when loading prop is true", () => {
+    const { getByTestId } = render(
       <Button onPress={() => {}} loading>
         Loading Button
       </Button>,
-      {wrapper: AllTheProviders},
+      { wrapper: AllTheProviders },
     );
 
     // Note: This test is simplified. In real scenario,

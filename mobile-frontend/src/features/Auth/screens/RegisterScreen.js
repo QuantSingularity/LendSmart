@@ -1,6 +1,6 @@
-import {Formik} from 'formik';
-import PropTypes from 'prop-types';
-import {useContext, useState} from 'react';
+import { Formik } from "formik";
+import PropTypes from "prop-types";
+import { useContext, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -8,55 +8,55 @@ import {
   ScrollView,
   StyleSheet,
   View,
-} from 'react-native';
-import {Button, Text, TextInput, useTheme} from 'react-native-paper';
-import * as Yup from 'yup';
-import {AuthContext} from '../../../contexts/AuthContext';
+} from "react-native";
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import * as Yup from "yup";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 // Removed direct import of spacing, use theme.spacing instead
 
 const RegisterSchema = Yup.object().shape({
-  name: Yup.string().required('Name is required'),
-  email: Yup.string().email('Invalid email').required('Email is required'),
+  name: Yup.string().required("Name is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string()
-    .min(8, 'Password must be at least 8 characters')
-    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .matches(/[0-9]/, 'Password must contain at least one number')
-    .required('Password is required'),
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .matches(/[0-9]/, "Password must contain at least one number")
+    .required("Password is required"),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password'), null], 'Passwords must match')
-    .required('Confirm password is required'),
+    .oneOf([Yup.ref("password"), null], "Passwords must match")
+    .required("Confirm password is required"),
 });
 
-const RegisterScreen = ({navigation}) => {
-  const {register, loading, error: authError} = useContext(AuthContext);
+const RegisterScreen = ({ navigation }) => {
+  const { register, loading, error: authError } = useContext(AuthContext);
   const theme = useTheme();
   const styles = createStyles(theme);
   const [serverError, setServerError] = useState(null);
 
-  const handleRegister = async (values, {setSubmitting, resetForm}) => {
+  const handleRegister = async (values, { setSubmitting, resetForm }) => {
     try {
       setServerError(null);
       // eslint-disable-next-line no-unused-vars
-      const {confirmPassword, ...userData} = values;
+      const { confirmPassword, ...userData } = values;
       await register(userData);
       // Show success message and navigate to login
       Alert.alert(
-        'Registration Successful',
-        'You can now log in with your credentials.',
+        "Registration Successful",
+        "You can now log in with your credentials.",
         [
           {
-            text: 'OK',
+            text: "OK",
             onPress: () => {
               resetForm();
-              navigation.navigate('Login');
+              navigation.navigate("Login");
             },
           },
         ],
       );
     } catch (err) {
-      setServerError(err.message || 'Registration failed. Please try again.');
+      setServerError(err.message || "Registration failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -64,8 +64,9 @@ const RegisterScreen = ({navigation}) => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.keyboardAvoidingView}>
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.keyboardAvoidingView}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           <Text style={styles.title}>Create Account</Text>
@@ -73,13 +74,14 @@ const RegisterScreen = ({navigation}) => {
 
           <Formik
             initialValues={{
-              name: '',
-              email: '',
-              password: '',
-              confirmPassword: '',
+              name: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
             }}
             validationSchema={RegisterSchema}
-            onSubmit={handleRegister}>
+            onSubmit={handleRegister}
+          >
             {({
               handleChange,
               handleBlur,
@@ -93,8 +95,8 @@ const RegisterScreen = ({navigation}) => {
                 <TextInput
                   label="Full Name"
                   value={values.name}
-                  onChangeText={handleChange('name')}
-                  onBlur={handleBlur('name')}
+                  onChangeText={handleChange("name")}
+                  onBlur={handleBlur("name")}
                   style={styles.input}
                   mode="outlined" // Modern outlined style
                   error={touched.name && !!errors.name}
@@ -107,8 +109,8 @@ const RegisterScreen = ({navigation}) => {
                 <TextInput
                   label="Email"
                   value={values.email}
-                  onChangeText={handleChange('email')}
-                  onBlur={handleBlur('email')}
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   style={styles.input}
@@ -123,8 +125,8 @@ const RegisterScreen = ({navigation}) => {
                 <TextInput
                   label="Password"
                   value={values.password}
-                  onChangeText={handleChange('password')}
-                  onBlur={handleBlur('password')}
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
                   secureTextEntry
                   style={styles.input}
                   mode="outlined" // Modern outlined style
@@ -138,8 +140,8 @@ const RegisterScreen = ({navigation}) => {
                 <TextInput
                   label="Confirm Password"
                   value={values.confirmPassword}
-                  onChangeText={handleChange('confirmPassword')}
-                  onBlur={handleBlur('confirmPassword')}
+                  onChangeText={handleChange("confirmPassword")}
+                  onBlur={handleBlur("confirmPassword")}
                   secureTextEntry
                   style={styles.input}
                   mode="outlined" // Modern outlined style
@@ -171,10 +173,11 @@ const RegisterScreen = ({navigation}) => {
 
                 <Button
                   mode="text"
-                  onPress={() => navigation.navigate('Login')}
+                  onPress={() => navigation.navigate("Login")}
                   style={styles.switchButton}
                   disabled={isSubmitting || loading}
-                  labelStyle={styles.switchButtonLabel}>
+                  labelStyle={styles.switchButtonLabel}
+                >
                   Already have an account? Login
                 </Button>
               </View>
@@ -193,7 +196,7 @@ RegisterScreen.propTypes = {
 };
 
 // Updated createStyles function using the modernized theme
-const createStyles = theme =>
+const createStyles = (theme) =>
   StyleSheet.create({
     keyboardAvoidingView: {
       flex: 1,
@@ -201,11 +204,11 @@ const createStyles = theme =>
     },
     scrollContainer: {
       flexGrow: 1,
-      justifyContent: 'center',
+      justifyContent: "center",
     },
     container: {
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: "center",
       padding: theme.spacing.xl,
       backgroundColor: theme.colors.background,
     },
@@ -213,18 +216,18 @@ const createStyles = theme =>
       fontSize: theme.fontSizes.h1,
       fontFamily: theme.fonts.primaryBold,
       color: theme.colors.primary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
       fontSize: theme.fontSizes.body1,
       fontFamily: theme.fonts.primary,
       color: theme.colors.textSecondary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: theme.spacing.xl,
     },
     formContainer: {
-      width: '100%',
+      width: "100%",
     },
     input: {
       marginBottom: theme.spacing.md,
@@ -259,7 +262,7 @@ const createStyles = theme =>
       color: theme.colors.error,
       fontSize: theme.fontSizes.body2,
       fontFamily: theme.fonts.primaryMedium,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: theme.spacing.sm,
       marginBottom: theme.spacing.md,
     },

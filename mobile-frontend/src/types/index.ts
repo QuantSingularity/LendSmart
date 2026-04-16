@@ -4,7 +4,7 @@ export interface User {
   email: string;
   name?: string;
   walletAddress?: string;
-  role: 'borrower' | 'lender' | 'both';
+  role: "borrower" | "lender" | "both";
   reputation?: number;
   createdAt: string;
   updatedAt: string;
@@ -21,7 +21,7 @@ export interface AuthCredentials {
 
 export interface RegisterData extends AuthCredentials {
   name: string;
-  role?: 'borrower' | 'lender' | 'both';
+  role?: "borrower" | "lender" | "both";
 }
 
 export interface AuthResponse {
@@ -33,14 +33,14 @@ export interface AuthResponse {
 
 // Loan Types
 export enum LoanStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  FUNDED = 'funded',
-  ACTIVE = 'active',
-  REPAYING = 'repaying',
-  COMPLETED = 'completed',
-  DEFAULTED = 'defaulted',
-  REJECTED = 'rejected',
+  PENDING = "pending",
+  APPROVED = "approved",
+  FUNDED = "funded",
+  ACTIVE = "active",
+  REPAYING = "repaying",
+  COMPLETED = "completed",
+  DEFAULTED = "defaulted",
+  REJECTED = "rejected",
 }
 
 export interface Loan {
@@ -57,7 +57,7 @@ export interface Loan {
   status: LoanStatus;
   creditScore?: number;
   aiRiskScore?: number;
-  riskCategory?: 'low' | 'medium' | 'high';
+  riskCategory?: "low" | "medium" | "high";
   collateral?: string;
   createdAt: string;
   fundedAt?: string;
@@ -89,7 +89,7 @@ export interface LoanFilters {
   maxAmount?: number;
   minInterestRate?: number;
   maxInterestRate?: number;
-  riskCategory?: 'low' | 'medium' | 'high';
+  riskCategory?: "low" | "medium" | "high";
   status?: LoanStatus;
   searchQuery?: string;
 }
@@ -98,15 +98,15 @@ export interface LoanFilters {
 export interface Transaction {
   id: string;
   type:
-    | 'loan_funded'
-    | 'loan_repayment'
-    | 'loan_application'
-    | 'loan_disbursed';
+    | "loan_funded"
+    | "loan_repayment"
+    | "loan_application"
+    | "loan_disbursed";
   amount: number;
   loanId?: string;
   from?: string;
   to?: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: "pending" | "completed" | "failed";
   transactionHash?: string;
   createdAt: string;
   description?: string;
@@ -169,7 +169,7 @@ export type MainTabParamList = {
 
 export type MarketplaceStackParamList = {
   MarketplaceList: undefined;
-  LoanDetails: {loanId: string};
+  LoanDetails: { loanId: string };
 };
 
 // Form Types

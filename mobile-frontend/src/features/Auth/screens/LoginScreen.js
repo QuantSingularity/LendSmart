@@ -1,35 +1,35 @@
-import {Formik} from 'formik';
-import PropTypes from 'prop-types';
-import {useContext} from 'react';
+import { Formik } from "formik";
+import PropTypes from "prop-types";
+import { useContext } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   View,
-} from 'react-native';
-import {Button, Text, TextInput, useTheme} from 'react-native-paper';
-import * as Yup from 'yup';
-import {AuthContext} from '../../../contexts/AuthContext';
+} from "react-native";
+import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import * as Yup from "yup";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 // Removed direct import of spacing, use theme.spacing instead
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email('Invalid email').required('Required'),
-  password: Yup.string().min(6, 'Password too short').required('Required'),
+  email: Yup.string().email("Invalid email").required("Required"),
+  password: Yup.string().min(6, "Password too short").required("Required"),
 });
 
-const LoginScreen = ({navigation}) => {
-  const {login, loading, error} = useContext(AuthContext);
+const LoginScreen = ({ navigation }) => {
+  const { login, loading, error } = useContext(AuthContext);
   const theme = useTheme(); // Get the full theme object
   const styles = createStyles(theme); // Pass theme to style creator
 
-  const handleLogin = async (values, {setSubmitting}) => {
+  const handleLogin = async (values, { setSubmitting }) => {
     try {
       await login(values);
       // Navigation handled by AppNavigator
     } catch (err) {
-      console.log('Login error caught in screen:', err);
+      console.log("Login error caught in screen:", err);
     } finally {
       setSubmitting(false);
     }
@@ -37,8 +37,9 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.keyboardAvoidingView}>
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.keyboardAvoidingView}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
           {/* Consider adding an App Logo here */}
@@ -46,9 +47,10 @@ const LoginScreen = ({navigation}) => {
           <Text style={styles.subtitle}>Login to your LendSmart account</Text>
 
           <Formik
-            initialValues={{email: '', password: ''}}
+            initialValues={{ email: "", password: "" }}
             validationSchema={LoginSchema}
-            onSubmit={handleLogin}>
+            onSubmit={handleLogin}
+          >
             {({
               handleChange,
               handleBlur,
@@ -62,8 +64,8 @@ const LoginScreen = ({navigation}) => {
                 <TextInput
                   label="Email"
                   value={values.email}
-                  onChangeText={handleChange('email')}
-                  onBlur={handleBlur('email')}
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   style={styles.input}
@@ -78,8 +80,8 @@ const LoginScreen = ({navigation}) => {
                 <TextInput
                   label="Password"
                   value={values.password}
-                  onChangeText={handleChange('password')}
-                  onBlur={handleBlur('password')}
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
                   secureTextEntry
                   style={styles.input}
                   mode="outlined" // Modern outlined style
@@ -110,10 +112,11 @@ const LoginScreen = ({navigation}) => {
 
                 <Button
                   mode="text"
-                  onPress={() => navigation.navigate('Register')}
+                  onPress={() => navigation.navigate("Register")}
                   style={styles.switchButton}
                   disabled={isSubmitting || loading}
-                  labelStyle={styles.switchButtonLabel}>
+                  labelStyle={styles.switchButtonLabel}
+                >
                   Don't have an account? Register
                 </Button>
               </View>
@@ -132,7 +135,7 @@ LoginScreen.propTypes = {
 };
 
 // Updated createStyles function using the modernized theme
-const createStyles = theme =>
+const createStyles = (theme) =>
   StyleSheet.create({
     keyboardAvoidingView: {
       flex: 1,
@@ -140,11 +143,11 @@ const createStyles = theme =>
     },
     scrollContainer: {
       flexGrow: 1,
-      justifyContent: 'center',
+      justifyContent: "center",
     },
     container: {
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: "center",
       padding: theme.spacing.xl, // Use theme spacing
       backgroundColor: theme.colors.background,
     },
@@ -152,18 +155,18 @@ const createStyles = theme =>
       fontSize: theme.fontSizes.h1, // Use theme font sizes
       fontFamily: theme.fonts.primaryBold, // Use theme fonts
       color: theme.colors.primary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
       fontSize: theme.fontSizes.body1,
       fontFamily: theme.fonts.primary,
       color: theme.colors.textSecondary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: theme.spacing.xl,
     },
     formContainer: {
-      width: '100%',
+      width: "100%",
     },
     input: {
       marginBottom: theme.spacing.md,
@@ -189,7 +192,7 @@ const createStyles = theme =>
       fontSize: theme.fontSizes.body2,
     },
     forgotPasswordButton: {
-      alignSelf: 'flex-end',
+      alignSelf: "flex-end",
       marginTop: -theme.spacing.sm, // Adjust position
       marginBottom: theme.spacing.md,
     },
@@ -204,7 +207,7 @@ const createStyles = theme =>
       color: theme.colors.error,
       fontSize: theme.fontSizes.body2,
       fontFamily: theme.fonts.primaryMedium,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: theme.spacing.sm,
       marginBottom: theme.spacing.md,
     },

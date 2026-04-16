@@ -1,16 +1,22 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import PropTypes from 'prop-types';
-import {createContext, useCallback, useEffect, useMemo, useState} from 'react';
-import {useColorScheme} from 'react-native';
-import {CombinedDarkTheme, CombinedLightTheme} from '../theme/theme';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PropTypes from "prop-types";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useColorScheme } from "react-native";
+import { CombinedDarkTheme, CombinedLightTheme } from "../theme/theme";
 
 // Theme preference storage key
-const THEME_PREFERENCE_KEY = 'themePreference';
+const THEME_PREFERENCE_KEY = "themePreference";
 // Theme mode options
 const THEME_MODES = {
-  LIGHT: 'light',
-  DARK: 'dark',
-  SYSTEM: 'system', // Follow system preference
+  LIGHT: "light",
+  DARK: "dark",
+  SYSTEM: "system", // Follow system preference
 };
 
 export const ThemeContext = createContext({
@@ -23,7 +29,7 @@ export const ThemeContext = createContext({
   fonts: CombinedLightTheme.fonts,
 });
 
-export const ThemeProvider = ({children}) => {
+export const ThemeProvider = ({ children }) => {
   const systemColorScheme = useColorScheme(); // 'light', 'dark', or null
   const [themeMode, setThemeModeState] = useState(THEME_MODES.SYSTEM);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +46,7 @@ export const ThemeProvider = ({children}) => {
           setThemeModeState(savedThemeMode);
         }
       } catch (error) {
-        console.error('Failed to load theme preference:', error);
+        console.error("Failed to load theme preference:", error);
       } finally {
         setIsLoading(false);
       }
@@ -52,7 +58,7 @@ export const ThemeProvider = ({children}) => {
   // Determine if dark mode should be active based on theme mode and system preference
   const isDark = useMemo(() => {
     if (themeMode === THEME_MODES.SYSTEM) {
-      return systemColorScheme === 'dark';
+      return systemColorScheme === "dark";
     }
     return themeMode === THEME_MODES.DARK;
   }, [themeMode, systemColorScheme]);
@@ -70,7 +76,7 @@ export const ThemeProvider = ({children}) => {
   }, [isDark, setThemeMode]);
 
   // Set theme mode and persist to storage
-  const setThemeMode = useCallback(async mode => {
+  const setThemeMode = useCallback(async (mode) => {
     if (!Object.values(THEME_MODES).includes(mode)) {
       console.error(`Invalid theme mode: ${mode}`);
       return;
@@ -80,12 +86,12 @@ export const ThemeProvider = ({children}) => {
       await AsyncStorage.setItem(THEME_PREFERENCE_KEY, mode);
       setThemeModeState(mode);
     } catch (error) {
-      console.error('Failed to save theme preference:', error);
+      console.error("Failed to save theme preference:", error);
     }
   }, []);
 
   // Extract colors and fonts for easier access
-  const {colors, fonts} = theme;
+  const { colors, fonts } = theme;
 
   // Create context value with memoization for performance
   const contextValue = useMemo(

@@ -1,6 +1,6 @@
 // Removed unused MaterialCommunityIcons import
-import PropTypes from 'prop-types';
-import {useEffect, useState} from 'react';
+import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
 // Import TextInput from react-native
 import {
   ActivityIndicator,
@@ -9,97 +9,104 @@ import {
   StyleSheet,
   TextInput,
   View,
-} from 'react-native';
-import {Button, Card, Divider, List, Text, useTheme} from 'react-native-paper';
-import {useWallet} from '../../../contexts/WalletContext'; // To check connection status
-import {getLoanDetails} from '../../../services/apiService';
+} from "react-native";
+import {
+  Button,
+  Card,
+  Divider,
+  List,
+  Text,
+  useTheme,
+} from "react-native-paper";
+import { useWallet } from "../../../contexts/WalletContext"; // To check connection status
+import { getLoanDetails } from "../../../services/apiService";
 
 // Placeholder function for fallback
 const placeholderLoans = [
   {
-    id: '1',
+    id: "1",
     amount: 1500,
     interestRate: 8.5,
     term: 12,
-    purpose: 'Debt Consolidation',
-    creditScoreRange: '650-700',
-    status: 'Available',
-    borrower: '0x123...abc',
+    purpose: "Debt Consolidation",
+    creditScoreRange: "650-700",
+    status: "Available",
+    borrower: "0x123...abc",
     description:
-      'Looking to consolidate high-interest credit card debt into a single, manageable loan.',
-    collateral: 'None',
+      "Looking to consolidate high-interest credit card debt into a single, manageable loan.",
+    collateral: "None",
     fundedAmount: 0,
   },
   {
-    id: '2',
+    id: "2",
     amount: 500,
     interestRate: 12.0,
     term: 6,
-    purpose: 'Small Business',
-    creditScoreRange: '600-650',
-    status: 'Available',
-    borrower: '0x456...def',
+    purpose: "Small Business",
+    creditScoreRange: "600-650",
+    status: "Available",
+    borrower: "0x456...def",
     description:
-      'Need short-term funding for inventory purchase for my online store.',
-    collateral: 'None',
+      "Need short-term funding for inventory purchase for my online store.",
+    collateral: "None",
     fundedAmount: 100,
   },
   {
-    id: '3',
+    id: "3",
     amount: 3000,
     interestRate: 7.0,
     term: 24,
-    purpose: 'Home Improvement',
-    creditScoreRange: '700+',
-    status: 'Available',
-    borrower: '0x789...ghi',
+    purpose: "Home Improvement",
+    creditScoreRange: "700+",
+    status: "Available",
+    borrower: "0x789...ghi",
     description:
-      'Funding needed for kitchen renovation project. Stable income and good credit history.',
-    collateral: 'None',
+      "Funding needed for kitchen renovation project. Stable income and good credit history.",
+    collateral: "None",
     fundedAmount: 0,
   },
   {
-    id: '4',
+    id: "4",
     amount: 1000,
     interestRate: 9.0,
     term: 9,
-    purpose: 'Education',
-    creditScoreRange: '680-720',
-    status: 'Funded',
-    borrower: '0xabc...123',
-    description: 'Loan to cover costs for a professional certification course.',
-    collateral: 'None',
+    purpose: "Education",
+    creditScoreRange: "680-720",
+    status: "Funded",
+    borrower: "0xabc...123",
+    description: "Loan to cover costs for a professional certification course.",
+    collateral: "None",
     fundedAmount: 1000,
   },
 ];
 
 // Get loan details by ID
-const getLoanDetailsById = async loanId => {
-  console.log('Fetching details for loan:', loanId);
+const getLoanDetailsById = async (loanId) => {
+  console.log("Fetching details for loan:", loanId);
   try {
     const response = await getLoanDetails(loanId);
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch loan details:', error);
+    console.error("Failed to fetch loan details:", error);
     // Fallback to placeholder data
-    const loan = placeholderLoans.find(l => l.id === loanId);
+    const loan = placeholderLoans.find((l) => l.id === loanId);
     if (!loan) {
-      throw new Error('Loan not found');
+      throw new Error("Loan not found");
     }
     return loan;
   }
 };
 
-const LoanDetailsScreen = ({route, navigation}) => {
-  const {loanId} = route.params;
+const LoanDetailsScreen = ({ route, navigation }) => {
+  const { loanId } = route.params;
   const theme = useTheme();
   const styles = createStyles(theme);
-  const {isConnected, address, connectWallet} = useWallet(); // Get wallet context
+  const { isConnected, address, connectWallet } = useWallet(); // Get wallet context
 
   const [loan, setLoan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [fundingAmount, setFundingAmount] = useState(''); // For funding input
+  const [fundingAmount, setFundingAmount] = useState(""); // For funding input
   const [isFunding, setIsFunding] = useState(false);
 
   useEffect(() => {
@@ -110,7 +117,7 @@ const LoanDetailsScreen = ({route, navigation}) => {
         const loanDetails = await getLoanDetailsById(loanId);
         setLoan(loanDetails);
       } catch (err) {
-        setError(err.message || 'Failed to load loan details.');
+        setError(err.message || "Failed to load loan details.");
       } finally {
         setLoading(false);
       }
@@ -121,9 +128,9 @@ const LoanDetailsScreen = ({route, navigation}) => {
   const handleFundLoan = async () => {
     if (!isConnected) {
       Alert.alert(
-        'Connect Wallet',
-        'Please connect your wallet to fund a loan.',
-        [{text: 'Cancel'}, {text: 'Connect', onPress: connectWallet}],
+        "Connect Wallet",
+        "Please connect your wallet to fund a loan.",
+        [{ text: "Cancel" }, { text: "Connect", onPress: connectWallet }],
       );
       return;
     }
@@ -132,14 +139,14 @@ const LoanDetailsScreen = ({route, navigation}) => {
     const amountToFund = parseFloat(fundingAmount);
     if (Number.isNaN(amountToFund) || amountToFund <= 0) {
       Alert.alert(
-        'Invalid Amount',
-        'Please enter a valid positive amount to fund.',
+        "Invalid Amount",
+        "Please enter a valid positive amount to fund.",
       );
       return;
     }
     if (amountToFund > loan.amount - (loan.fundedAmount || 0)) {
       Alert.alert(
-        'Invalid Amount',
+        "Invalid Amount",
         `You can fund a maximum of $${(loan.amount - (loan.fundedAmount || 0)).toFixed(2)}.`,
       );
       return;
@@ -152,19 +159,19 @@ const LoanDetailsScreen = ({route, navigation}) => {
         `Funding loan ${loanId} with $${amountToFund} from address ${address}`,
       );
       // Example: await blockchainService.fundLoan(loanId, amountToFund);
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate transaction
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate transaction
 
       Alert.alert(
-        'Funding Successful',
+        "Funding Successful",
         `You have successfully funded $${amountToFund} for loan ${loanId}.`,
       );
       // Optionally navigate back or refresh data
       navigation.goBack();
     } catch (err) {
-      console.error('Funding failed:', err);
+      console.error("Funding failed:", err);
       Alert.alert(
-        'Funding Failed',
-        err.message || 'An error occurred while funding the loan.',
+        "Funding Failed",
+        err.message || "An error occurred while funding the loan.",
       );
     } finally {
       setIsFunding(false);
@@ -183,14 +190,14 @@ const LoanDetailsScreen = ({route, navigation}) => {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>
-          {error || 'Loan details not available.'}
+          {error || "Loan details not available."}
         </Text>
       </View>
     );
   }
 
   const remainingAmount = loan.amount - (loan.fundedAmount || 0);
-  const isFundable = loan.status === 'Available' && remainingAmount > 0;
+  const isFundable = loan.status === "Available" && remainingAmount > 0;
 
   return (
     <ScrollView style={styles.container}>
@@ -253,12 +260,12 @@ const LoanDetailsScreen = ({route, navigation}) => {
             left={() => (
               <List.Icon
                 icon={
-                  loan.status === 'Available'
-                    ? 'check-circle-outline'
-                    : 'information-outline'
+                  loan.status === "Available"
+                    ? "check-circle-outline"
+                    : "information-outline"
                 }
                 color={
-                  loan.status === 'Available'
+                  loan.status === "Available"
                     ? theme.colors.success
                     : theme.colors.disabled
                 }
@@ -294,8 +301,9 @@ const LoanDetailsScreen = ({route, navigation}) => {
                 style={styles.fundButton}
                 disabled={isFunding || !isConnected}
                 loading={isFunding}
-                icon="cash-plus">
-                {isConnected ? 'Fund Now' : 'Connect Wallet to Fund'}
+                icon="cash-plus"
+              >
+                {isConnected ? "Fund Now" : "Connect Wallet to Fund"}
               </Button>
               {!isConnected && (
                 <Text style={styles.connectPrompt}>
@@ -321,7 +329,7 @@ LoanDetailsScreen.propTypes = {
   }).isRequired,
 };
 
-const createStyles = theme =>
+const createStyles = (theme) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -329,20 +337,20 @@ const createStyles = theme =>
     },
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       backgroundColor: theme.colors.background,
     },
     errorContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       padding: theme.spacing.lg,
     },
     errorText: {
       color: theme.colors.error,
       fontSize: theme.fontSizes.body1,
-      textAlign: 'center',
+      textAlign: "center",
     },
     card: {
       margin: theme.spacing.lg,
@@ -379,7 +387,7 @@ const createStyles = theme =>
       lineHeight: theme.fontSizes.body1 * 1.5,
     },
     addressText: {
-      fontFamily: 'monospace', // Use monospace for addresses
+      fontFamily: "monospace", // Use monospace for addresses
       fontSize: theme.fontSizes.caption,
     },
     fundingSection: {
@@ -390,11 +398,11 @@ const createStyles = theme =>
       fontFamily: theme.fonts.primarySemiBold,
       color: theme.colors.primary,
       marginBottom: theme.spacing.md,
-      textAlign: 'center',
+      textAlign: "center",
     },
     inputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: theme.borderRadius.md,
@@ -419,7 +427,7 @@ const createStyles = theme =>
       paddingVertical: theme.spacing.xs,
     },
     connectPrompt: {
-      textAlign: 'center',
+      textAlign: "center",
       color: theme.colors.textSecondary,
       marginTop: theme.spacing.sm,
       fontSize: theme.fontSizes.caption,

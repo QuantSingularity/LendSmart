@@ -1,5 +1,5 @@
-import {useContext} from 'react';
-import {LoanContext} from '../contexts/LoanContext';
+import { useContext } from "react";
+import { LoanContext } from "../contexts/LoanContext";
 
 /**
  * Custom hook to access loan context
@@ -9,7 +9,7 @@ export const useLoan = () => {
   const context = useContext(LoanContext);
 
   if (!context) {
-    throw new Error('useLoan must be used within a LoanProvider');
+    throw new Error("useLoan must be used within a LoanProvider");
   }
 
   return context;

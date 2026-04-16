@@ -1,11 +1,11 @@
-import {ethers} from 'ethers';
-import {Platform} from 'react-native';
+import { ethers } from "ethers";
+import { Platform } from "react-native";
 // It_s generally not recommended to store private keys directly in mobile app storage for mainnet.
 // For development or testnets, or if using a wallet SDK that manages keys, this might differ.
 
 // Assuming ABIs and addresses are bundled or managed similarly to the web version
-import LoanContractABI from '../contracts/LoanContract.json';
-import ContractAddress from '../contracts/LoanContract-address.json';
+import LoanContractABI from "../contracts/LoanContract.json";
+import ContractAddress from "../contracts/LoanContract-address.json";
 
 // For mobile, direct RPC URLs might be used for read-only, but transactions need a wallet.
 // Integration with mobile wallets (MetaMask mobile, Trust Wallet, etc.) is typically done via WalletConnect or deeplinking.
@@ -22,15 +22,15 @@ let signer; // This would be a Wallet instance if using a private key directly, 
 let loanContract;
 let loanContractReadOnly;
 
-const LOCAL_RPC_URL_IOS = 'http://localhost:8545'; // For local Hardhat/Ganache node when running on iOS simulator
-const LOCAL_RPC_URL_ANDROID = 'http://10.0.2.2:8545'; // For local Hardhat/Ganache node when running on Android emulator
+const LOCAL_RPC_URL_IOS = "http://localhost:8545"; // For local Hardhat/Ganache node when running on iOS simulator
+const LOCAL_RPC_URL_ANDROID = "http://10.0.2.2:8545"; // For local Hardhat/Ganache node when running on Android emulator
 const SELECTED_RPC_URL =
-  Platform.OS === 'ios' ? LOCAL_RPC_URL_IOS : LOCAL_RPC_URL_ANDROID;
+  Platform.OS === "ios" ? LOCAL_RPC_URL_IOS : LOCAL_RPC_URL_ANDROID;
 
 // Fallback to a public testnet RPC if no local dev key is set
 const DEFAULT_TESTNET_RPC =
   process.env.MOBILE_TESTNET_RPC_URL ||
-  'https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID'; // Replace with your Sepolia RPC
+  "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID"; // Replace with your Sepolia RPC
 const CONTRACT_ADDRESS =
   process.env.MOBILE_LOAN_CONTRACT_ADDRESS || ContractAddress.address;
 
@@ -46,17 +46,17 @@ export const initMobileBlockchainService = async (devPrivateKey = null) => {
       provider = new ethers.JsonRpcProvider(currentProviderUrl);
       signer = new ethers.Wallet(devPrivateKey, provider);
       console.log(
-        'Mobile blockchain service initialized with development signer (private key).',
+        "Mobile blockchain service initialized with development signer (private key).",
       );
     } else {
       // Read-only provider if no private key (or for public data fetching)
       // For actual transactions, a wallet connection (e.g. WalletConnect) would be needed here.
       console.warn(
-        'Initializing mobile blockchain service in read-only mode or awaiting WalletConnect.',
+        "Initializing mobile blockchain service in read-only mode or awaiting WalletConnect.",
       );
-      console.warn('To perform transactions, integrate a mobile wallet SDK.');
+      console.warn("To perform transactions, integrate a mobile wallet SDK.");
       currentProviderUrl = DEFAULT_TESTNET_RPC.includes(
-        'YOUR_INFURA_PROJECT_ID',
+        "YOUR_INFURA_PROJECT_ID",
       )
         ? SELECTED_RPC_URL
         : DEFAULT_TESTNET_RPC;
@@ -69,9 +69,9 @@ export const initMobileBlockchainService = async (devPrivateKey = null) => {
       `Connected to network: ${network.name} (Chain ID: ${network.chainId}) via ${currentProviderUrl}`,
     );
 
-    if (!CONTRACT_ADDRESS || CONTRACT_ADDRESS === '') {
+    if (!CONTRACT_ADDRESS || CONTRACT_ADDRESS === "") {
       console.error(
-        'LoanContract address is not configured for mobile. Check env or src/contracts/LoanContract-address.json',
+        "LoanContract address is not configured for mobile. Check env or src/contracts/LoanContract-address.json",
       );
       // Alert.alert("Error", "Smart contract address not found.");
       return false;
@@ -91,13 +91,13 @@ export const initMobileBlockchainService = async (devPrivateKey = null) => {
     );
 
     console.log(
-      'Mobile LoanContract instance created. Address:',
+      "Mobile LoanContract instance created. Address:",
       CONTRACT_ADDRESS,
     );
-    if (signer) console.log('Signer address:', await signer.getAddress());
+    if (signer) console.log("Signer address:", await signer.getAddress());
     return true;
   } catch (error) {
-    console.error('Error initializing mobile blockchain service:', error);
+    console.error("Error initializing mobile blockchain service:", error);
     // Alert.alert("Blockchain Error", "Could not connect to the blockchain network.");
     return false;
   }
@@ -121,11 +121,11 @@ export const getConnectedAccount = async () => {
 const getSignerOrThrow = () => {
   if (!signer)
     throw new Error(
-      'Signer not available. Connect wallet or provide private key for development.',
+      "Signer not available. Connect wallet or provide private key for development.",
     );
   if (!loanContract)
     throw new Error(
-      'LoanContract instance not available. Initialize service first.',
+      "LoanContract instance not available. Initialize service first.",
     );
   return loanContract; // Returns the contract instance bound to the signer
 };
@@ -152,7 +152,7 @@ export const requestLoanOnChain = async (
     // return receipt;
     return tx;
   } catch (error) {
-    console.error('Mobile: Error requesting loan on chain:', error);
+    console.error("Mobile: Error requesting loan on chain:", error);
     throw error;
   }
 };
@@ -169,12 +169,12 @@ export const fundLoanOnChain = async (loanId, tokenAddress, amountToFund) => {
     const amount = ethers.parseUnits(amountToFund.toString(), 18);
     const approveTx = await tokenContract.approve(CONTRACT_ADDRESS, amount);
     await approveTx.wait();
-    console.log('Mobile: Token approval successful for funding.');
+    console.log("Mobile: Token approval successful for funding.");
 
     const tx = await contract.fundLoan(loanId);
     return tx;
   } catch (error) {
-    console.error('Mobile: Error funding loan on chain:', error);
+    console.error("Mobile: Error funding loan on chain:", error);
     throw error;
   }
 };
@@ -190,19 +190,19 @@ export const repayLoanOnChain = async (loanId, tokenAddress, amountToRepay) => {
     const amount = ethers.parseUnits(amountToRepay.toString(), 18);
     const approveTx = await tokenContract.approve(CONTRACT_ADDRESS, amount);
     await approveTx.wait();
-    console.log('Mobile: Token approval successful for repayment.');
+    console.log("Mobile: Token approval successful for repayment.");
 
     const tx = await contract.repayLoan(loanId, amount);
     return tx;
   } catch (error) {
-    console.error('Mobile: Error repaying loan on chain:', error);
+    console.error("Mobile: Error repaying loan on chain:", error);
     throw error;
   }
 };
 
-export const getLoanDetailsFromChain = async loanId => {
+export const getLoanDetailsFromChain = async (loanId) => {
   if (!loanContractReadOnly)
-    throw new Error('Read-only contract instance not available.');
+    throw new Error("Read-only contract instance not available.");
   try {
     const loanDetails = await loanContractReadOnly.getLoanDetails(loanId);
     return {
@@ -229,12 +229,12 @@ export const getLoanDetailsFromChain = async loanId => {
   }
 };
 
-export const getUserLoansFromChain = async userAddress => {
+export const getUserLoansFromChain = async (userAddress) => {
   if (!loanContractReadOnly)
-    throw new Error('Read-only contract instance not available.');
+    throw new Error("Read-only contract instance not available.");
   try {
     const loanIdsBigInt = await loanContractReadOnly.getUserLoans(userAddress);
-    return loanIdsBigInt.map(id => id.toString());
+    return loanIdsBigInt.map((id) => id.toString());
   } catch (error) {
     console.error(
       `Mobile: Error fetching loans for user ${userAddress} from chain:`,
@@ -250,26 +250,26 @@ if (LoanContractABI && !LoanContractABI.abi_erc20) {
     {
       constant: false,
       inputs: [
-        {name: '_spender', type: 'address'},
-        {name: '_value', type: 'uint256'},
+        { name: "_spender", type: "address" },
+        { name: "_value", type: "uint256" },
       ],
-      name: 'approve',
-      outputs: [{name: '', type: 'bool'}],
+      name: "approve",
+      outputs: [{ name: "", type: "bool" }],
       payable: false,
-      stateMutability: 'nonpayable',
-      type: 'function',
+      stateMutability: "nonpayable",
+      type: "function",
     },
     {
       constant: true,
       inputs: [
-        {name: '_owner', type: 'address'},
-        {name: '_spender', type: 'address'},
+        { name: "_owner", type: "address" },
+        { name: "_spender", type: "address" },
       ],
-      name: 'allowance',
-      outputs: [{name: '', type: 'uint256'}],
+      name: "allowance",
+      outputs: [{ name: "", type: "uint256" }],
       payable: false,
-      stateMutability: 'view',
-      type: 'function',
+      stateMutability: "view",
+      type: "function",
     },
   ];
 }

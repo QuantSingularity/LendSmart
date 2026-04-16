@@ -1,8 +1,8 @@
-import type React from 'react';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Chip, Text, useTheme} from 'react-native-paper';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Card from './Card';
+import type React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Chip, Text, useTheme } from "react-native-paper";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Card from "./Card";
 
 interface Loan {
   id: string;
@@ -13,7 +13,7 @@ interface Loan {
   status?: string;
   borrowerName?: string;
   borrowerReputation?: number;
-  riskCategory?: 'low' | 'medium' | 'high';
+  riskCategory?: "low" | "medium" | "high";
   fundedAmount?: number;
   remainingAmount?: number;
 }
@@ -23,16 +23,16 @@ interface LoanCardProps {
   onPress: () => void;
 }
 
-const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
+const LoanCard: React.FC<LoanCardProps> = ({ loan, onPress }) => {
   const theme = useTheme();
 
   const getRiskColor = (risk?: string) => {
     switch (risk) {
-      case 'low':
+      case "low":
         return theme.colors.success;
-      case 'medium':
+      case "medium":
         return theme.colors.warning;
-      case 'high':
+      case "high":
         return theme.colors.error;
       default:
         return theme.colors.textSecondary;
@@ -40,7 +40,7 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
   };
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toLocaleString('en-US', {
+    return `$${amount.toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -64,7 +64,8 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
                   color: theme.colors.primary,
                   fontFamily: theme.fonts.primaryBold,
                 },
-              ]}>
+              ]}
+            >
               {formatCurrency(loan.amount)}
             </Text>
             {loan.riskCategory && (
@@ -72,9 +73,10 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
                 mode="flat"
                 style={[
                   styles.riskChip,
-                  {backgroundColor: getRiskColor(loan.riskCategory)},
+                  { backgroundColor: getRiskColor(loan.riskCategory) },
                 ]}
-                textStyle={styles.chipText}>
+                textStyle={styles.chipText}
+              >
                 {loan.riskCategory.toUpperCase()}
               </Chip>
             )}
@@ -89,7 +91,8 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
                 fontFamily: theme.fonts.primary,
               },
             ]}
-            numberOfLines={2}>
+            numberOfLines={2}
+          >
             {loan.purpose}
           </Text>
 
@@ -104,8 +107,9 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
               <Text
                 style={[
                   styles.detailText,
-                  {color: theme.colors.textSecondary},
-                ]}>
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 {loan.interestRate}% APR
               </Text>
             </View>
@@ -118,8 +122,9 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
               <Text
                 style={[
                   styles.detailText,
-                  {color: theme.colors.textSecondary},
-                ]}>
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 {loan.term} months
               </Text>
             </View>
@@ -136,8 +141,9 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
               <Text
                 style={[
                   styles.borrowerName,
-                  {color: theme.colors.textSecondary},
-                ]}>
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
                 {loan.borrowerName}
               </Text>
               {loan.borrowerReputation && (
@@ -150,8 +156,9 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
                   <Text
                     style={[
                       styles.reputationText,
-                      {color: theme.colors.textSecondary},
-                    ]}>
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
                     {loan.borrowerReputation.toFixed(1)}
                   </Text>
                 </View>
@@ -166,8 +173,9 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
                 <View
                   style={[
                     styles.progressBar,
-                    {backgroundColor: theme.colors.border},
-                  ]}>
+                    { backgroundColor: theme.colors.border },
+                  ]}
+                >
                   <View
                     style={[
                       styles.progressFill,
@@ -181,9 +189,10 @@ const LoanCard: React.FC<LoanCardProps> = ({loan, onPress}) => {
                 <Text
                   style={[
                     styles.progressText,
-                    {color: theme.colors.textSecondary},
-                  ]}>
-                  {formatCurrency(loan.fundedAmount)} /{' '}
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  {formatCurrency(loan.fundedAmount)} /{" "}
                   {formatCurrency(loan.amount)}
                 </Text>
               </View>
@@ -203,34 +212,34 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   amount: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   riskChip: {
     height: 24,
   },
   chipText: {
     fontSize: 10,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   purpose: {
     fontSize: 14,
     marginBottom: 12,
   },
   details: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 8,
   },
   detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 16,
   },
   detailText: {
@@ -238,8 +247,8 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   borrowerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
   },
   borrowerName: {
@@ -247,8 +256,8 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   reputation: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginLeft: 8,
   },
   reputationText: {
@@ -261,15 +270,15 @@ const styles = StyleSheet.create({
   progressBar: {
     height: 6,
     borderRadius: 3,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
   },
   progressText: {
     fontSize: 10,
     marginTop: 4,
-    textAlign: 'right',
+    textAlign: "right",
   },
 });
 
