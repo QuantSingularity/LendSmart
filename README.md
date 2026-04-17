@@ -12,8 +12,6 @@ LendSmart is an innovative decentralized lending platform that combines blockcha
   <img src="docs/images/LendSmart_dashboard.bmp" alt="LendSmart Dashboard" width="80%">
 </div>
 
-> **Note**: This project is under active development. Features and functionalities are continuously being enhanced to improve lending capabilities and user experience.
-
 ## Table of Contents
 
 - [Overview](#overview)
