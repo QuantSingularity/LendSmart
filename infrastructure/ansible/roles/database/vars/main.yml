@@ -1,5 +1,5 @@
 ---
 # roles/database/vars/main.yml
-# Default values — override via group_vars using ansible-vault for secrets.
+# Default values - override via group_vars using ansible-vault for secrets.
 db_max_connections: 150
 db_root_username: root

@@ -16,7 +16,7 @@ module.exports = {
   // LoanRegistry: the operator-written audit-anchor contract that
   // BlockchainService.createLoanContract()/recordRepayment() write to. See
   // code/blockchain/contracts/LoanRegistry.sol for why this is a registry
-  // rather than the escrow contracts above — this platform is custodial
+  // rather than the escrow contracts above - this platform is custodial
   // (KYC + a payment processor move the actual funds) and relays every
   // write from a single backend-held operator wallet, so it can't safely
   // use msg.sender-attributed escrow functions on behalf of real users.

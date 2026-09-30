@@ -1,4 +1,4 @@
-# ALB Security Group — allows public internet traffic
+# ALB Security Group - allows public internet traffic
 resource "aws_security_group" "alb" {
   name        = "${var.app_name}-${var.environment}-alb-sg"
   description = "Security group for the Application Load Balancer"
@@ -34,10 +34,10 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# Application Security Group — only accepts traffic from the ALB
+# Application Security Group - only accepts traffic from the ALB
 resource "aws_security_group" "app" {
   name        = "${var.app_name}-${var.environment}-app-sg"
-  description = "Security group for application servers — ingress from ALB only"
+  description = "Security group for application servers - ingress from ALB only"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -62,10 +62,10 @@ resource "aws_security_group" "app" {
   }
 }
 
-# Database Security Group — only accepts traffic from app servers
+# Database Security Group - only accepts traffic from app servers
 resource "aws_security_group" "db" {
   name        = "${var.app_name}-${var.environment}-db-sg"
-  description = "Security group for database servers — ingress from app servers only"
+  description = "Security group for database servers - ingress from app servers only"
   vpc_id      = var.vpc_id
 
   ingress {

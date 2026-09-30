@@ -1,6 +1,6 @@
 ---
 # roles/webserver/vars/main.yml
-# Default values — app_name and server_name are passed via group_vars or inventory
+# Default values - app_name and server_name are passed via group_vars or inventory
 app_port: 3000
 nginx_worker_processes: auto
 nginx_worker_connections: 1024

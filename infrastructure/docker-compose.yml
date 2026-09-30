@@ -1,4 +1,4 @@
-# docker-compose.yml — Local development environment
+# docker-compose.yml - Local development environment
 # Usage:
 #   cp .env.example .env         # fill in your values
 #   docker compose up --build
@@ -6,7 +6,7 @@
 version: "3.9"
 
 services:
-  # ── Database (MongoDB — matches the backend's mongoose driver) ──────────────
+  # ── Database (MongoDB - matches the backend's mongoose driver) ──────────────
   database:
     build:
       context: .

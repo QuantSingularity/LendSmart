@@ -1,6 +1,6 @@
 # Example Terraform Variables
 # Copy to terraform.tfvars and fill in your values.
-# DO NOT commit terraform.tfvars to version control — it is in .gitignore.
+# DO NOT commit terraform.tfvars to version control - it is in .gitignore.
 
 # ── AWS ────────────────────────────────────────────────────────────────────
 aws_region = "us-west-2"
@@ -22,7 +22,7 @@ key_name             = null   # Set to your EC2 key pair name; null = use SSM on
 asg_min_size         = 1
 asg_max_size         = 3
 asg_desired_capacity = 1
-acm_certificate_arn  = ""     # Required for HTTPS listener — set after cert is issued
+acm_certificate_arn  = ""     # Required for HTTPS listener - set after cert is issued
 
 # ── Database ───────────────────────────────────────────────────────────────
 db_instance_class = "db.t3.micro"

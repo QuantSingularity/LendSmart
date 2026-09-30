@@ -104,7 +104,7 @@ class BlockchainService {
   /**
    * Record a newly-funded off-chain loan on the LoanRegistry contract.
    *
-   * This does NOT deploy a new contract per loan — LendSmart is custodial
+   * This does NOT deploy a new contract per loan - LendSmart is custodial
    * (KYC + a payment processor already moved the real funds before this is
    * called), and the backend's single operator wallet is the only signer
    * involved, so a shared audit-registry contract is what actually matches

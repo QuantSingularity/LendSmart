@@ -2,10 +2,10 @@
 
 Production-grade infrastructure for the LendSmart platform, covering:
 
-- **Terraform** — AWS provisioning (VPC, EC2 + ASG, RDS, S3, CloudFront, IAM, CloudWatch)
-- **Kubernetes** — Deployments, Services, Ingress, RBAC, NetworkPolicy, HPA, monitoring, logging
-- **Ansible** — Server provisioning, hardening, database and web-server configuration
-- **Docker** — Multi-stage Dockerfiles for backend, frontend, and database; Compose for local dev
+- **Terraform** - AWS provisioning (VPC, EC2 + ASG, RDS, S3, CloudFront, IAM, CloudWatch)
+- **Kubernetes** - Deployments, Services, Ingress, RBAC, NetworkPolicy, HPA, monitoring, logging
+- **Ansible** - Server provisioning, hardening, database and web-server configuration
+- **Docker** - Multi-stage Dockerfiles for backend, frontend, and database; Compose for local dev
 
 ---
 
@@ -24,7 +24,7 @@ infrastructure/
 ├── docker-compose.prod.yml         # Production override (resource limits, no exposed DB ports)
 ├── .env.example                    # Environment variable template
 ├── terraform/
-│   ├── main.tf                     # Root module — wires all child modules
+│   ├── main.tf                     # Root module - wires all child modules
 │   ├── variables.tf                # Root variables with validation
 │   ├── outputs.tf                  # Root outputs
 │   ├── backend.tf                  # S3 backend instructions (uncomment to activate)
@@ -120,7 +120,7 @@ terraform plan  -var-file=environments/dev/terraform.tfvars
 terraform apply -var-file=environments/dev/terraform.tfvars
 ```
 
-> **Secrets** — never store `db_password` in tfvars committed to git.  
+> **Secrets** - never store `db_password` in tfvars committed to git.  
 > Use `TF_VAR_db_password` env-var or AWS Secrets Manager with a data source.
 
 #### Enable S3 remote state (recommended for teams)
@@ -142,7 +142,7 @@ kubectl apply -f base/
 # kubectl apply -k environments/dev/
 ```
 
-> **Grafana admin password** — populate the `admin-password` key in the
+> **Grafana admin password** - populate the `admin-password` key in the
 > `grafana-admin-secret` Secret before deploying `monitoring.yaml`.
 
 ### 4 · Ansible
@@ -178,11 +178,11 @@ Prod automatically enables: Multi-AZ RDS, deletion protection, final snapshot.
 
 ## Security Posture
 
-- **Network** — Internet traffic hits the ALB only. EC2 instances are in private subnets and accept traffic only from the ALB security group on port 3000. Databases accept only from the app security group on port 27017.
-- **IAM** — EC2 instances get a least-privilege instance profile: SSM (no SSH keys required in prod), CloudWatch agent, and optional S3 read-only.
-- **Encryption** — RDS encrypted at rest (AES-256 / KMS), S3 SSE-AES256, HTTPS enforced at the ALB (TLS 1.2+) and at Nginx.
-- **Kubernetes** — Zero-trust NetworkPolicy (deny-all default, explicit per-workload rules), non-root containers, `readOnlyRootFilesystem`, dropped Linux capabilities, topology spread.
-- **Secrets** — No plaintext secrets in manifests. Use External Secrets Operator / Sealed Secrets / AWS Secrets Manager CSI driver for production.
+- **Network** - Internet traffic hits the ALB only. EC2 instances are in private subnets and accept traffic only from the ALB security group on port 3000. Databases accept only from the app security group on port 27017.
+- **IAM** - EC2 instances get a least-privilege instance profile: SSM (no SSH keys required in prod), CloudWatch agent, and optional S3 read-only.
+- **Encryption** - RDS encrypted at rest (AES-256 / KMS), S3 SSE-AES256, HTTPS enforced at the ALB (TLS 1.2+) and at Nginx.
+- **Kubernetes** - Zero-trust NetworkPolicy (deny-all default, explicit per-workload rules), non-root containers, `readOnlyRootFilesystem`, dropped Linux capabilities, topology spread.
+- **Secrets** - No plaintext secrets in manifests. Use External Secrets Operator / Sealed Secrets / AWS Secrets Manager CSI driver for production.
 
 ---
 

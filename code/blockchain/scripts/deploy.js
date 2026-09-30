@@ -43,7 +43,7 @@ async function main() {
 
   // ── Deploy LoanRegistry ───────────────────────────────────────────────────
   // Owned by the backend's operator wallet (the address whose private key
-  // is configured as *_PRIVATE_KEY for this network) — that's the account
+  // is configured as *_PRIVATE_KEY for this network) - that's the account
   // that will call recordLoanFunded/recordRepayment on the backend's behalf.
   const registryOperator =
     process.env.LOAN_REGISTRY_OPERATOR_ADDRESS || deployer.address;

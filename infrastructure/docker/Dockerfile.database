@@ -4,7 +4,7 @@ FROM mongo:7
 # Apply custom MongoDB configuration
 COPY docker/mongod.conf /etc/mongod.conf
 
-# Copy database initialisation scripts (optional — place .js/.sh files here)
+# Copy database initialisation scripts (optional - place .js/.sh files here)
 # COPY db/init/ /docker-entrypoint-initdb.d/
 
 EXPOSE 27017

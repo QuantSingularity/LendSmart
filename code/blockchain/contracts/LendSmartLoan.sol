@@ -878,7 +878,7 @@ contract LendSmartLoan is Ownable, ReentrancyGuard, Pausable {
     /**
      * @dev Owner can withdraw ERC20 tokens accidentally sent to the contract.
      * This can NEVER touch funds that are actively escrowed for a loan
-     * (principal awaiting disbursement or deposited collateral) — only the
+     * (principal awaiting disbursement or deposited collateral) - only the
      * surplus balance above `totalEscrowed[_tokenAddress]` is withdrawable,
      * so this function cannot be used to rug borrower collateral or lender
      * principal.

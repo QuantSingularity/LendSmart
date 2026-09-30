@@ -646,7 +646,7 @@ export const BlockchainProvider = ({ children }) => {
   );
 
   // Context value. Memoized so functions passed to consumers (e.g. used as
-  // useEffect dependencies) keep a stable reference across renders — without
+  // useEffect dependencies) keep a stable reference across renders - without
   // this, an effect that depends on one of these functions re-fires on every
   // render, which can spiral into an infinite fetch loop.
   const value = useMemo(
