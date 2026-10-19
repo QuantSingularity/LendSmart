@@ -237,10 +237,10 @@ jobs:
           retention-days: 14
 
   # ============================================================
-  # Job 5 -- Web Build
+  # Job 5 -- Web Frontend Build
   # ============================================================
-  web_build:
-    name: Web Build
+  web-frontend_build:
+    name: Web-Frontend Build
     runs-on: ubuntu-latest
     needs: code_quality
 
