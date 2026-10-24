@@ -8,6 +8,8 @@
     "lint": "eslint .",
     "start": "expo start",
     "test": "jest",
+    "build:web": "expo export --platform web",
+    "test:ci": "jest --coverage --watchAll=false --forceExit --ci",
     "web": "expo start --web"
   },
   "dependencies": {
