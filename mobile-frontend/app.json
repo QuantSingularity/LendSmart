@@ -7,7 +7,9 @@
     "scheme": "lendsmart",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lendsmart.mobile"
@@ -15,6 +17,9 @@
     "android": {
       "package": "com.lendsmart.mobile",
       "edgeToEdgeEnabled": true
-    }
+    },
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }
