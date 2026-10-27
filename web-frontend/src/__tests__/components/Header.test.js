@@ -64,7 +64,7 @@ describe("Header Component", () => {
   test("displays user menu when authenticated", () => {
     useApi.mockReturnValue({
       isAuthenticated: true,
-      user: { name: "Test User", email: "test@test.com" },
+      user: { firstName: "Test", username: "testuser", email: "test@test.com" },
       logout: jest.fn(),
     });
 
